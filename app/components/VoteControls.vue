@@ -1,24 +1,28 @@
 <template>
-  <div v-if="visible" class="vote-controls">
-    <span class="vote-controls__count">{{ voteCount }} {{ voteCount === 1 ? 'vote' : 'votes' }}</span>
-    <button
+  <div v-if="visible" class="vote-controls flex items-center gap-3">
+    <span class="vote-controls__count text-sm text-muted">{{ voteCount }} {{ voteCount === 1 ? 'vote' : 'votes' }}</span>
+    <UButton
       type="button"
       data-action="vote"
+      :color="myInterest === 'vote' ? 'primary' : 'neutral'"
+      :variant="myInterest === 'vote' ? 'solid' : 'soft'"
       :aria-pressed="myInterest === 'vote'"
       :disabled="loading"
       @click="handleCast('vote')"
     >
       {{ myInterest === 'vote' ? 'Voted' : 'Vote' }}
-    </button>
-    <button
+    </UButton>
+    <UButton
       type="button"
       data-action="volunteer"
+      :color="myInterest === 'volunteer' ? 'primary' : 'neutral'"
+      :variant="myInterest === 'volunteer' ? 'solid' : 'soft'"
       :aria-pressed="myInterest === 'volunteer'"
       :disabled="loading"
       @click="handleCast('volunteer')"
     >
       {{ myInterest === 'volunteer' ? 'Volunteering' : 'Volunteer' }}
-    </button>
+    </UButton>
   </div>
 </template>
 
@@ -27,6 +31,8 @@
 // UI layer — the API also blocks this independently, in vote.post.ts/volunteer.post.ts) and when
 // not logged in. Fetches its own vote-count/interest summary via onMounted rather than a blocking
 // top-level await, so N cards' fetches don't delay the whole event list's first render.
+// Restyled with Nuxt UI (Milestone 5): UButton replaces the old bare <button>s, still real
+// <button> elements underneath so existing [data-action="..."] queries keep working unchanged.
 import type { Event, InterestKind } from '../../shared/types'
 import { useAuth } from '../composables/useAuth'
 import { useEvents } from '../composables/useEvents'

@@ -1,22 +1,20 @@
 <template>
-  <form class="event-form" @submit.prevent="handleSubmit">
-    <p v-if="errors.length" class="event-form__errors" role="alert">
-      {{ errors.join(', ') }}
-    </p>
+  <form class="event-form flex flex-col gap-4" @submit.prevent="handleSubmit">
+    <UAlert v-if="errors.length" class="event-form__errors" color="error" variant="soft" role="alert" :title="errors.join(', ')" />
 
-    <label>
+    <label class="flex flex-col gap-1.5 text-sm font-medium">
       Name
-      <input v-model="form.name" name="name" type="text" :aria-invalid="hasError('name')" />
+      <UInput v-model="form.name" name="name" type="text" :aria-invalid="hasError('name')" />
     </label>
 
-    <label>
+    <label class="flex flex-col gap-1.5 text-sm font-medium">
       Location
-      <input v-model="form.location" name="location" type="text" :aria-invalid="hasError('location')" />
+      <UInput v-model="form.location" name="location" type="text" :aria-invalid="hasError('location')" />
     </label>
 
-    <label>
+    <label class="flex flex-col gap-1.5 text-sm font-medium">
       Type
-      <select v-model="form.type" name="type" :aria-invalid="hasError('type')">
+      <select v-model="form.type" name="type" class="app-select" :aria-invalid="hasError('type')">
         <option value="" disabled>Select a type</option>
         <option v-for="eventType in EVENT_TYPES" :key="eventType" :value="eventType">
           {{ eventType }}
@@ -24,17 +22,17 @@
       </select>
     </label>
 
-    <label>
+    <label class="flex flex-col gap-1.5 text-sm font-medium">
       Description
-      <textarea v-model="form.description" name="description" :aria-invalid="hasError('description')" />
+      <UTextarea v-model="form.description" name="description" :aria-invalid="hasError('description')" />
     </label>
 
-    <label>
+    <label class="flex flex-col gap-1.5 text-sm font-medium">
       When
-      <input v-model="form.dateTime" name="dateTime" type="datetime-local" :aria-invalid="hasError('dateTime')" />
+      <UInput v-model="form.dateTime" name="dateTime" type="datetime-local" :aria-invalid="hasError('dateTime')" />
     </label>
 
-    <button type="submit">Submit Event</button>
+    <UButton type="submit" block>Submit Event</UButton>
   </form>
 </template>
 
@@ -43,6 +41,10 @@
 // exact same rule the server enforces — so client feedback and server enforcement can't drift
 // apart. On success, creates the event via useEvents() and emits it for the parent page to react
 // to (navigation, confirmation, etc.) rather than deciding that here.
+// Restyled with Nuxt UI (Milestone 5): UInput/UTextarea/UButton/UAlert replace the old bare
+// elements for text/textarea/submit/error — each still renders a real native input/textarea
+// under the hood, so [name="..."] queries and .setValue() keep working unchanged. The type field
+// stays a native <select> (see login.vue's comment for why) styled via the .app-select class.
 
 import { EVENT_TYPES } from '../../shared/types'
 import type { Event, EventType } from '../../shared/types'

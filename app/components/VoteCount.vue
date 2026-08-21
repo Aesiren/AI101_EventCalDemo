@@ -1,9 +1,9 @@
 <template>
-  <div class="vote-count">
-    <span>{{ voteCount }} {{ voteCount === 1 ? 'vote' : 'votes' }}</span>
-    <div v-if="volunteers" data-section="volunteers">
-      <p v-if="volunteers.length === 0">No volunteers yet.</p>
-      <ul v-else>
+  <div class="vote-count flex flex-col gap-1">
+    <span class="text-sm text-muted">{{ voteCount }} {{ voteCount === 1 ? 'vote' : 'votes' }}</span>
+    <div v-if="volunteers" data-section="volunteers" class="text-sm">
+      <p v-if="volunteers.length === 0" class="text-muted italic">No volunteers yet.</p>
+      <ul v-else class="list-disc list-inside">
         <li v-for="name in volunteers" :key="name">{{ name }}</li>
       </ul>
     </div>
@@ -14,7 +14,7 @@
 // Read-only vote total + (Leader-only) volunteer names (US-2.4, TC-2.4-01). Leaders don't vote
 // through this view, so this is deliberately not VoteControls with its buttons hidden; it's a
 // separate, simpler component. Fetches on mount, same reasoning as VoteControls: keeps the
-// hosting page (leader.vue) from needing its own per-event fetch orchestration.
+// hosting page (leader.vue, events/index.vue) from needing its own per-event fetch orchestration.
 //
 // volunteers comes back undefined for a non-Leader viewer (see interest.get.ts) — that's the only
 // signal this component needs; it doesn't check the role itself.

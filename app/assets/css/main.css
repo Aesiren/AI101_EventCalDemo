@@ -1,0 +1,23 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+
+/*
+ * Native <select> elements (login.vue's account picker, EventForm's event-type field) are kept
+ * native rather than swapped for Nuxt UI's USelect — see the comments in those files for why —
+ * but styled here to match Nuxt UI's own input look (same tokens UInput/UTextarea use), so the
+ * shared visual language (US-3.5) still holds even where the underlying element isn't a Nuxt UI
+ * component.
+ */
+.app-select {
+  border-radius: var(--ui-radius, 0.375rem);
+  border: 1px solid var(--ui-border-accented, #d4d4d8);
+  background-color: var(--ui-bg, #fff);
+  color: var(--ui-text-highlighted, inherit);
+  padding: 0.375rem 0.625rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+.app-select:focus-visible {
+  outline: 2px solid var(--ui-primary, #10b981);
+  outline-offset: 2px;
+}

@@ -14,7 +14,8 @@ those docs rather than duplicating them, so it can't drift out of sync.
 
 ## Stack
 
-Nuxt 4 (TypeScript) + Vitest + Anthropic TypeScript SDK (server-only) + in-memory store.
+Nuxt 4 (TypeScript) + Vitest + Anthropic TypeScript SDK (server-only) + in-memory store +
+**Nuxt UI** (v4+, on Tailwind CSS 4 — styling, since Milestone 5).
 
 **Node 24 LTS is required** (see `.nvmrc`) — Nuxt 4.5.x's `engines` field does not support the
 Node 25.x line; run `nvm use` before working in this repo.
@@ -35,18 +36,24 @@ under `server/`, and code shared between both lives in `shared/`.
 app/
   app.vue        MUST render <NuxtPage /> — the Nuxt starter template ships <NuxtWelcome />
                  instead, which silently makes every pages/ route unreachable. Caught once
-                 already (Milestone 2); don't let it regress.
+                 already (Milestone 2); don't let it regress. Wrapped in <UApp> (Nuxt UI's
+                 top-level provider — toasts/tooltips/etc.) — only one <UApp> should ever exist;
+                 it does not also belong in app/layouts/default.vue.
+  assets/css/main.css   `@import "tailwindcss"; @import "@nuxt/ui";` plus the `.app-select`
+                 utility class (see components note below). Registered via `css` in
+                 nuxt.config.ts.
   pages/
-    index.vue         not logged in -> /login; logged in -> a dashboard of every navigable
-                       section, role-filtered (US-3.4, Milestone 5). Nuxt's file-based routing
-                       makes this the page that loads at `/`, so it can never be the event list.
+    index.vue         not logged in -> /login; logged in -> a Nuxt UI dashboard (UCard tiles) of
+                       every navigable section, role-filtered (US-3.4, built Milestone 5). Nuxt's
+                       file-based routing makes this the page that loads at `/`, so it can never
+                       be the event list.
     login.vue         US-1.13 — dropdown-only login (no free-text name entry)
     events/
-      index.vue        minimal list — name + vote count only (US-1.2, revised, Milestone 5)
+      index.vue        minimal list — name + vote count only (US-1.2, revised, built Milestone 5)
       [id].vue         full fields + submitter + vote/volunteer controls (US-1.14, US-2.1-2.3)
     submit.vue        US-1.3–US-1.9 (Milestone 3+)
-    leader.vue        US-1.11, US-1.12 (Milestone 2, in progress)
-  components/    EventCard, EventForm, AiAssistPanel, BaseSupportToggle, ResourcesCommittedToggle, VoteControls
+    leader.vue        US-1.11, US-1.12
+  components/    EventCard, EventForm, AiAssistPanel, BaseSupportToggle, ResourcesCommittedToggle, VoteControls, VoteCount
   composables/   useAuth (login, listAccounts), useEvents (refresh, createEvent, fetchEvent)
   middleware/    requireLeader.ts — but referenced in definePageMeta as 'require-leader'
                  (kebab-case). Nuxt derives the middleware name from the filename and
@@ -115,13 +122,31 @@ SDK client. Don't break this boundary for convenience.
 
 ## Status / known gaps
 
-- Milestones 1–4 complete — **Phase 1 and Phase 2 both done.** A new **Milestone 5 — UI
-  Consistency & Navigation** was inserted ahead of the original Phase 3 work (now Milestone 6) —
-  see `docs/07-milestones.md` for the current step list. Styling library: **Nuxt UI** (v4+, on
-  Tailwind CSS 4) — not yet installed as of this writing.
+- **Milestones 1–5 complete** — Phase 1, Phase 2, and the UI Consistency & Navigation milestone
+  are all done. Only **Milestone 6 — Phase 3 (Beautification)** remains: calendar, chart, and
+  needs-voting views — see `docs/07-milestones.md`.
 - **US-1.2 was revised** (see `docs/02-user-stories.md`): the event list shows only name + vote
-  count now, not all six fields — that moved to the event's own page (US-1.14, already built).
-  `app/pages/events/index.vue` itself hasn't been updated to match yet — that's Milestone 5 step 3.
+  count now, not all six fields — that moved to the event's own page (US-1.14). Both are built.
+- **Nuxt UI (v4.11+, on Tailwind CSS 4)** is installed and used across every page/component —
+  `UCard`, `UButton`, `UAlert`, `UInput`, `UTextarea`, `UHeader`, `UNavigationMenu`, `UBadge`,
+  `USeparator`, etc. Two deliberate exceptions, both **native `<select>`**, not Nuxt UI's
+  `USelect`: the login account picker (`login.vue`) and the event-type field (`EventForm.vue`).
+  Reason: `USelect` doesn't render a real `<select>` — it's a Reka UI listbox (`SelectTrigger` +
+  a teleported `SelectContent` of `role="option"` divs) driven by pointer/keyboard events, not
+  `.setValue()`. Confirmed by hand: even with `:portal="false"` and `attachTo: document.body`, a
+  plain `.trigger('click')` on an option does *not* select it — Reka UI's item selection needs a
+  pointer-event sequence VTU doesn't produce for free. Rather than choreograph that (or worse,
+  make it flaky), both dropdowns stay native `<select>` elements, styled via the `.app-select`
+  utility class in `app/assets/css/main.css` to visually match Nuxt UI's own input look. If a
+  future page genuinely needs `USelect` (e.g. a searchable/multi-select picker where the native
+  element can't do the job), expect to test it by opening the trigger, then finding
+  `[role="option"]` and dispatching a full pointer sequence (`pointerdown`+`pointerup`, not just
+  `click`) — or query the `SelectRoot`'s `@update:model-value` behavior a different way entirely.
+  Don't assume `wrapper.find('select')` or `.setValue()` will ever work on it.
+- `UHeader`'s built-in mobile hamburger toggle button is disabled (`:toggle="false"` in
+  `app/layouts/default.vue`) — it rendered unconditionally regardless of login state, which broke
+  the "no `<button>` at all when logged out" test in `default.test.ts`, and this app's nav is
+  short enough not to need a mobile drawer anyway.
 - Vote/interest data (`voteCount`, `myInterest`) is deliberately kept off the `Event` type itself
   — it's viewer-specific and derived, not intrinsic. Fetched separately via
   `GET /api/events/:id/interest` (`useEvents().fetchInterest()`), consumed by `VoteControls.vue`

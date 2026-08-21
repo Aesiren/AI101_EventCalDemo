@@ -1,20 +1,25 @@
 <template>
-  <main>
-    <NuxtLink to="/events">&larr; Back to events</NuxtLink>
+  <main class="max-w-2xl mx-auto">
+    <UButton to="/events" variant="link" color="neutral" icon="i-lucide:arrow-left" class="mb-4 px-0">
+      Back to events
+    </UButton>
     <template v-if="event">
-      <EventCard :event="event" />
-      <p class="event-detail__submitter">Submitted by {{ submitterName }}</p>
-      <VoteControls :event="event" />
+      <UCard variant="subtle">
+        <EventCard :event="event" />
+        <p class="event-detail__submitter text-sm text-muted mt-3">Submitted by {{ submitterName }}</p>
+        <USeparator class="my-4" />
+        <VoteControls :event="event" />
+      </UCard>
     </template>
-    <p v-else class="not-found">Event not found.</p>
+    <UAlert v-else class="not-found" color="neutral" variant="soft" title="Event not found." />
   </main>
 </template>
 
 <script setup lang="ts">
-// Individual event detail page (US-1.1, US-2.1, US-2.3). EventCard/VoteControls are left to
-// Nuxt's component auto-import; useEvents/useAuth are imported explicitly per project convention.
-// useRoute is a framework auto-import too — its params.id is set for tests via mountSuspended's
-// `route` option, no mocking needed.
+// Individual event detail page (US-1.1, US-1.14, US-2.1, US-2.3). EventCard/VoteControls are left
+// to Nuxt's component auto-import; useEvents/useAuth are imported explicitly per project
+// convention. useRoute is a framework auto-import too — its params.id is set for tests via
+// mountSuspended's `route` option, no mocking needed. Restyled with Nuxt UI (Milestone 5).
 import { useEvents } from '../../composables/useEvents'
 import { useAuth } from '../../composables/useAuth'
 import type { Event } from '../../../shared/types'

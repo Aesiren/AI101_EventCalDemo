@@ -71,7 +71,7 @@ Covers US-2.1–2.5 (FR-7, FR-8, FR-9). Mostly wiring, since `castInterest`'s ru
 7. `app/components/ResourcesCommittedToggle.vue` — Leader-only control, not rendered/available for User-role accounts; component test then implement.
 8. Add the toggle to `app/pages/leader.vue` alongside the Base support toggle (US-2.5, US-2.6 / TC-2.5-01/02).
 
-## Milestone 5 — UI Consistency & Navigation
+## Milestone 5 — UI Consistency & Navigation — done
 
 Covers US-1.2 (revised), US-3.4, US-3.5 (FR-1, FR-1b, FR-13, FR-14). Inserted ahead of the
 original Phase 3 milestone (now Milestone 6) at your request — cross-cutting UI work, not new
@@ -108,6 +108,16 @@ same content from the *list* page and doing the actual styling work.
    changes shape, update that test first, same TDD discipline as everywhere else. Follow with a
    live visual pass across every page (US-3.5) — this AC is inherently more qualitative than most
    in this project; see the note under US-3.5 in `03-acceptance-criteria.md`.
+
+**Done.** All 7 steps built (156/156 tests passing, `npx nuxi typecheck` clean, live dev-server
+smoke test of `/login`, `/events`, `/submit` confirmed Nuxt UI markup and CSS actually render).
+One deliberate deviation from "Nuxt UI components everywhere": the login account picker and
+`EventForm`'s event-type field stay **native `<select>`** elements (styled to match via a
+`.app-select` utility class) rather than Nuxt UI's `USelect`, which doesn't render a real
+`<select>` and isn't reliably drivable by `.setValue()` in tests — see the Status section of
+`CLAUDE.md` for the full reasoning. `UHeader`'s mobile hamburger toggle is also disabled
+(`:toggle="false"`) since it broke a "no button when logged out" test and this app's nav doesn't
+need a mobile drawer.
 
 ## Milestone 6 — Phase 3 (Beautification)
 

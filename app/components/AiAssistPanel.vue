@@ -1,51 +1,54 @@
 <template>
-  <div class="ai-assist-panel">
-    <ul v-if="conversation.length" class="ai-assist-panel__log">
-      <li v-for="(turn, i) in conversation" :key="i" :class="`ai-assist-panel__turn--${turn.role}`">
+  <div class="ai-assist-panel flex flex-col gap-4">
+    <ul v-if="conversation.length" class="ai-assist-panel__log flex flex-col gap-2">
+      <li
+        v-for="(turn, i) in conversation"
+        :key="i"
+        :class="[`ai-assist-panel__turn--${turn.role}`, 'rounded-md p-3 text-sm', turn.role === 'user' ? 'bg-elevated self-end' : 'bg-primary/10']"
+      >
         {{ turn.content }}
       </li>
     </ul>
 
-    <div v-if="hasAnyProposedField" class="ai-assist-panel__fields-preview">
-      <h3>What we have so far</h3>
-      <dl>
+    <UCard v-if="hasAnyProposedField" variant="subtle" class="ai-assist-panel__fields-preview">
+      <h3 class="font-semibold mb-2">What we have so far</h3>
+      <dl class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
         <template v-for="field in FIELD_ORDER" :key="field">
           <template v-if="latestResult?.proposedFields[field]">
-            <dt>{{ FIELD_LABELS[field] }}</dt>
+            <dt class="text-muted">{{ FIELD_LABELS[field] }}</dt>
             <dd>{{ latestResult.proposedFields[field] }}</dd>
           </template>
         </template>
       </dl>
-    </div>
+    </UCard>
 
     <template v-if="isRejected">
-      <p role="alert" class="ai-assist-panel__rejected">{{ rejectionMessage }}</p>
-      <button type="button" data-action="start-over" @click="handleReset">Start Over</button>
+      <UAlert role="alert" class="ai-assist-panel__rejected" color="error" variant="soft" :title="rejectionMessage" />
+      <UButton type="button" data-action="start-over" color="neutral" variant="soft" @click="handleReset">Start Over</UButton>
     </template>
 
     <template v-else>
-      <p v-if="latestResult && !latestResult.readyToSubmit" class="ai-assist-panel__question">
-        {{ latestResult.followUpQuestion }}
-      </p>
-      <p v-if="error" role="alert">{{ error }}</p>
+      <UAlert v-if="latestResult && !latestResult.readyToSubmit" class="ai-assist-panel__question" color="warning" variant="soft" :title="latestResult.followUpQuestion" />
+      <UAlert v-if="error" role="alert" color="error" variant="soft" :title="error" />
 
-      <form @submit.prevent="handleSend">
-        <label>
+      <form class="flex flex-col gap-2" @submit.prevent="handleSend">
+        <label class="flex flex-col gap-1.5 text-sm font-medium">
           {{ conversation.length ? 'Your response' : 'Describe your event idea' }}
-          <textarea v-model="userInput" name="userInput" :disabled="loading" />
+          <UTextarea v-model="userInput" name="userInput" :disabled="loading" />
         </label>
-        <button type="submit" :disabled="loading || !userInput.trim()">Send</button>
+        <UButton type="submit" :disabled="loading || !userInput.trim()">Send</UButton>
       </form>
 
-      <button
+      <UButton
         v-if="latestResult?.readyToSubmit"
         type="button"
         data-action="submit-event"
+        color="success"
         :disabled="submitting"
         @click="handleSubmit"
       >
         Submit Event
-      </button>
+      </UButton>
     </template>
   </div>
 </template>
@@ -56,6 +59,9 @@
 // either the agent's followUpQuestion (already just a template or guidelines.ts's own message —
 // see agent.ts's design notes) or text this component wrote itself; nothing is rendered from raw
 // model text.
+// Restyled with Nuxt UI (Milestone 5): UCard/UAlert/UButton/UTextarea replace the old bare
+// elements; UTextarea still renders a real native <textarea name="userInput">, so existing
+// [name="userInput"] queries and .setValue() keep working unchanged.
 import type { AgentTurnResult, CreateEventInput, Event } from '../../shared/types'
 import { useAgent } from '../composables/useAgent'
 import { useEvents } from '../composables/useEvents'

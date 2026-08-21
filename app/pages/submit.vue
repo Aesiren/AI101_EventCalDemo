@@ -1,20 +1,36 @@
 <template>
-  <main>
-    <h1>Submit an Event</h1>
+  <main class="max-w-xl mx-auto">
+    <h1 class="text-2xl font-bold mb-4">Submit an Event</h1>
 
-    <div class="submit-page__tabs" role="tablist">
-      <button type="button" data-tab="assist" :aria-pressed="mode === 'assist'" @click="mode = 'assist'">
+    <div class="submit-page__tabs flex gap-1 rounded-md bg-elevated p-1 mb-6" role="tablist">
+      <UButton
+        type="button"
+        data-tab="assist"
+        :aria-pressed="mode === 'assist'"
+        :color="mode === 'assist' ? 'primary' : 'neutral'"
+        :variant="mode === 'assist' ? 'solid' : 'ghost'"
+        class="flex-1 justify-center"
+        @click="mode = 'assist'"
+      >
         AI Assistant
-      </button>
-      <button type="button" data-tab="manual" :aria-pressed="mode === 'manual'" @click="mode = 'manual'">
+      </UButton>
+      <UButton
+        type="button"
+        data-tab="manual"
+        :aria-pressed="mode === 'manual'"
+        :color="mode === 'manual' ? 'primary' : 'neutral'"
+        :variant="mode === 'manual' ? 'solid' : 'ghost'"
+        class="flex-1 justify-center"
+        @click="mode = 'manual'"
+      >
         Manual Entry
-      </button>
+      </UButton>
     </div>
 
     <AiAssistPanel v-if="mode === 'assist'" @submitted="handleSubmitted" />
     <EventForm v-else @submitted="handleSubmitted" />
 
-    <p v-if="justSubmitted" role="status">Event submitted — thank you!</p>
+    <UAlert v-if="justSubmitted" class="mt-4" color="success" variant="soft" role="status" title="Event submitted — thank you!" />
   </main>
 </template>
 
@@ -24,6 +40,8 @@
 // EventForm both emit the same 'submitted' event with the created Event, so this page doesn't
 // need to know or care which path was used. v-if/v-else (not v-show) fully unmounts the inactive
 // panel on switch, rather than leaving stale state sitting around in a hidden component.
+// Restyled with Nuxt UI (Milestone 5) — the tab toggle is two UButtons rather than bare
+// <button>s, but keeps its data-tab attributes so existing tests are unaffected.
 import type { Event } from '../../shared/types'
 
 const mode = ref<'assist' | 'manual'>('assist')

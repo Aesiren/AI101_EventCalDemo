@@ -1,12 +1,20 @@
 <template>
-  <button v-if="isLeader" type="button" :aria-pressed="event.resourcesCommitted" @click="toggle">
+  <UButton
+    v-if="isLeader"
+    type="button"
+    :color="event.resourcesCommitted ? 'error' : 'success'"
+    variant="soft"
+    :aria-pressed="event.resourcesCommitted"
+    @click="toggle"
+  >
     {{ event.resourcesCommitted ? 'Clear Resources Committed' : 'Mark Resources Committed' }}
-  </button>
+  </UButton>
 </template>
 
 <script setup lang="ts">
 // Leader-only control (US-2.6, TC-2.6-03). Mirrors BaseSupportToggle.vue exactly — renders
 // nothing at all for a User-role account, defense in depth alongside the server route's own 403.
+// Restyled with Nuxt UI (Milestone 5); still a real <button> underneath.
 import type { Event } from '../../shared/types'
 import { useAuth } from '../composables/useAuth'
 import { useEvents } from '../composables/useEvents'

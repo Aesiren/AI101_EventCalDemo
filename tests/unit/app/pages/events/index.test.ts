@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { ref } from 'vue'
+import { flushPromises } from '@vue/test-utils'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import EventsIndexPage from '../../../../../app/pages/events/index.vue'
 import type { Event } from '../../../../../shared/types'
@@ -23,6 +24,7 @@ let mockEvents = ref<Event[]>([])
 // Same reasoning as EventForm's test: explicit import of useEvents makes this a plain vi.mock,
 // no fighting Nuxt's $fetch auto-import. `refresh()` runs at page-load time here (top-level
 // await in <script setup>), so unlike EventCard this page can't be tested without mocking it.
+const fetchInterestMock = vi.fn().mockResolvedValue({ voteCount: 3, myInterest: null })
 vi.mock('../../../../../app/composables/useEvents', () => ({
   useEvents: () => ({
     events: mockEvents,
@@ -30,22 +32,10 @@ vi.mock('../../../../../app/composables/useEvents', () => ({
     createEvent: vi.fn(),
     fetchEvent: vi.fn(),
     setBaseSupport: vi.fn(),
-    // VoteControls renders for real inside each event card here (not mocked out) — see its own
-    // test file for the behaviors these back.
-    fetchInterest: vi.fn().mockResolvedValue({ voteCount: 0, myInterest: null }),
+    // VoteCount renders for real inside each list item here (not mocked out) — see its own
+    // test file for the behaviors this backs.
+    fetchInterest: fetchInterestMock,
     castInterest: vi.fn()
-  })
-}))
-
-// VoteControls also calls useAuth() directly — not logged in by default here means it renders
-// nothing, keeping this page's own tests focused on the event list itself.
-vi.mock('../../../../../app/composables/useAuth', () => ({
-  useAuth: () => ({
-    currentAccount: ref(null),
-    isLeader: ref(false),
-    login: vi.fn(),
-    logout: vi.fn(),
-    listAccounts: vi.fn()
   })
 }))
 
@@ -63,11 +53,30 @@ describe('events index page', () => {
     expect(wrapper.text()).toMatch(/no events/i)
   })
 
-  it('renders an event card for each submitted event, linked to its detail page (TC-1.1-01)', async () => {
+  it('renders the event name, linked to its detail page (TC-1.2-04)', async () => {
     mockEvents = ref([EVENT_A])
     const wrapper = await mountSuspended(EventsIndexPage)
     expect(wrapper.text()).toContain('Community Cookout')
     expect(wrapper.text()).not.toMatch(/no events/i)
     expect(wrapper.find('a[href="/events/event-1"]').exists()).toBe(true)
+  })
+
+  it('renders the event\'s total vote count (TC-1.2-05)', async () => {
+    mockEvents = ref([EVENT_A])
+    fetchInterestMock.mockClear().mockResolvedValue({ voteCount: 3, myInterest: null })
+    const wrapper = await mountSuspended(EventsIndexPage)
+    await flushPromises()
+    expect(fetchInterestMock).toHaveBeenCalledWith('event-1')
+    expect(wrapper.text()).toContain('3')
+  })
+
+  it('does not render location, type, description, date/time, or Base support (TC-1.2-06)', async () => {
+    mockEvents = ref([EVENT_A])
+    const wrapper = await mountSuspended(EventsIndexPage)
+    await flushPromises()
+    expect(wrapper.text()).not.toContain('Base Pavilion')
+    expect(wrapper.text()).not.toContain('A casual cookout open to all base members.')
+    expect(wrapper.text()).not.toContain('2026-09-01T18:00:00.000Z')
+    expect(wrapper.text()).not.toMatch(/base support/i)
   })
 })

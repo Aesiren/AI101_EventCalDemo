@@ -48,7 +48,12 @@ app/
     leader.vue        US-1.11, US-1.12 (Milestone 2, in progress)
   components/    EventCard, EventForm, AiAssistPanel, BaseSupportToggle, ResourcesCommittedToggle, VoteControls
   composables/   useAuth (login, listAccounts), useEvents (refresh, createEvent, fetchEvent)
-  middleware/    requireLeader
+  middleware/    requireLeader.ts — but referenced in definePageMeta as 'require-leader'
+                 (kebab-case). Nuxt derives the middleware name from the filename and
+                 normalizes camelCase to kebab-case; the camelCase string typechecks as an error
+                 (TS2820) but wouldn't fail at runtime in a component-only test, since middleware
+                 doesn't execute during an isolated mountSuspended mount. Caught by
+                 `npx nuxi typecheck`, not by the test suite — another reason to always run both.
   utils/         resolveHomeRedirect — pure logic for the index.vue gate
 server/
   api/           thin route handlers only — no business logic here

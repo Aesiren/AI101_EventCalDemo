@@ -18,6 +18,8 @@
   "devDependencies": {
     "@nuxt/test-utils": "^4.1.0",
     "happy-dom": "^20.11.6",
-    "vitest": "^4.1.11"
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.11",
+    "vue-tsc": "^3.3.11"
   }
 }

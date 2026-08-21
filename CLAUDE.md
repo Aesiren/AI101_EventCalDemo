@@ -19,6 +19,13 @@ Nuxt 4 (TypeScript) + Vitest + Anthropic TypeScript SDK (server-only) + in-memor
 **Node 24 LTS is required** (see `.nvmrc`) — Nuxt 4.5.x's `engines` field does not support the
 Node 25.x line; run `nvm use` before working in this repo.
 
+**`typescript` is pinned to `^6`, not `^7`.** TypeScript 7.0 (the new native Go-based compiler,
+GA July 2026) isn't yet supported by `vue-tsc` — it needs an in-process TypeScript API that isn't
+stable in the native build. That gap is expected to close around TypeScript 7.1 (~October 2026).
+Until then, don't let `typescript` float to `^7` here — it breaks `npx nuxi typecheck` with
+`ERR_PACKAGE_PATH_NOT_EXPORTED` (package subpath `./lib/tsc` not exported). Safe to revisit once
+`vue-tsc` publishes TS 7 support.
+
 ## Folder structure
 
 Nuxt 4's default layout: browser-side code lives under `app/`, server-side code stays at root
@@ -71,5 +78,5 @@ SDK client. Don't break this boundary for convenience.
 
 - Milestone 1 (skeleton) in progress. `shared/types.ts` and `server/utils/store.ts` exist and are
   fully tested; no UI yet.
-- **No TypeScript type checker is installed** (`typescript` / `vue-tsc`) — `npx nuxi typecheck`
-  will fail until one is added. Not yet resolved as of this writing.
+- `typescript` + `vue-tsc` are installed and `npx nuxi typecheck` passes clean (see the `^6` pin
+  note above for why the version matters).

@@ -79,3 +79,14 @@ export type GuidelineResult =
   | { status: 'clear' }
   | { status: 'correctable'; guideline: string; message: string }
   | { status: 'rejected'; guideline: string; message: string }
+
+// One turn of the AI-assisted submission flow (server/utils/agent.ts). Just a data shape — no
+// guideline text or prompt content lives in this type, so it's safe for the client to know about.
+export interface AgentTurnResult {
+  proposedFields: Partial<CreateEventInput>
+  missingFields: (keyof CreateEventInput)[]
+  guidelineResult: GuidelineResult
+  /** Present whenever readyToSubmit is false — what to ask/tell the user next. */
+  followUpQuestion?: string
+  readyToSubmit: boolean
+}

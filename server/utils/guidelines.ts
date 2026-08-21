@@ -27,7 +27,7 @@ function containsAny(text: string, phrases: string[]): boolean {
 }
 
 const ALCOHOL_TERMS = [
-  'alcohol', 'beer', 'wine', 'liquor', 'cocktail',
+  'alcohol', 'beer', 'wine', 'liquor', 'cocktail', 'drinking',
   'open bar', 'full bar', 'bar crawl', 'beer pong', 'brewery', 'winery'
 ]
 const UNDER_21_TERMS = [

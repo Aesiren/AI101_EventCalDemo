@@ -85,7 +85,15 @@ async function handleSubmit() {
   const payload = { ...result.value }
 
   const { createEvent } = useEvents()
-  const created = await createEvent(payload)
+  let created: Event
+  try {
+    created = await createEvent(payload)
+  } catch {
+    // e.g. a 401 if the session expired/was never established — surfaced the same way
+    // validation errors are, rather than an unhandled rejection with no user feedback.
+    errors.value = ['Submission failed. Please make sure you are logged in and try again.']
+    return
+  }
   emit('submitted', created)
 
   form.name = ''

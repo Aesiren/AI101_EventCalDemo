@@ -70,6 +70,23 @@ describe('EventForm', () => {
     expect(wrapper.emitted('submitted')?.[0]).toEqual([CREATED])
   })
 
+  it('shows an error and does not emit "submitted" when createEvent fails (e.g. not logged in)', async () => {
+    createEventMock.mockClear()
+    createEventMock.mockRejectedValueOnce(new Error('401 not logged in'))
+    const wrapper = await mountSuspended(EventForm)
+
+    await wrapper.find('[name="name"]').setValue('Community Cookout')
+    await wrapper.find('[name="location"]').setValue('Base Pavilion')
+    await wrapper.find('[name="type"]').setValue('Social')
+    await wrapper.find('[name="description"]').setValue('A casual cookout open to all base members.')
+    await wrapper.find('[name="dateTime"]').setValue('2026-09-01T18:00')
+    await wrapper.find('form').trigger('submit.prevent')
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.emitted('submitted')).toBeUndefined()
+    expect(wrapper.text()).toMatch(/submission failed/i)
+  })
+
   it('clears the form after a successful submission', async () => {
     createEventMock.mockClear()
     const wrapper = await mountSuspended(EventForm)

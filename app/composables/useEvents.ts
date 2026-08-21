@@ -1,7 +1,7 @@
 // Wraps the /api/events* routes for the UI layer (FR-1, FR-2). Nothing under app/ talks to
 // server/utils/* directly — this composable is the only path from pages/components to the API.
 
-import type { CreateEventInput, Event } from '../../shared/types'
+import type { CreateEventInput, Event, EventInterestSummary, InterestKind } from '../../shared/types'
 
 export function useEvents() {
   const events = useState<Event[]>('events', () => [])
@@ -40,11 +40,40 @@ export function useEvents() {
     return updated
   }
 
+  // Leader-only (US-2.6) — mirrors setBaseSupport exactly.
+  async function setResourcesCommitted(
+    id: string,
+    resourcesCommitted: boolean,
+    fetcher: typeof $fetch = $fetch
+  ): Promise<Event> {
+    const updated = await fetcher<Event>(`/api/events/${id}/resources`, {
+      method: 'PATCH',
+      body: { resourcesCommitted }
+    })
+    events.value = events.value.map(e => (e.id === id ? updated : e))
+    return updated
+  }
+
+  // For VoteControls (US-2.1-2.4) — deliberately separate from the Event fetches above rather
+  // than embedding vote info directly on Event; see shared/types.ts's EventInterestSummary note.
+  async function fetchInterest(id: string, fetcher: typeof $fetch = $fetch): Promise<EventInterestSummary> {
+    return fetcher<EventInterestSummary>(`/api/events/${id}/interest`)
+  }
+
+  // One call for both vote and volunteer — the route path is just the kind, matching how
+  // vote.post.ts/volunteer.post.ts are named.
+  async function castInterest(id: string, kind: InterestKind, fetcher: typeof $fetch = $fetch): Promise<Event> {
+    return fetcher<Event>(`/api/events/${id}/${kind}`, { method: 'POST' })
+  }
+
   return {
     events,
     refresh,
     createEvent,
     fetchEvent,
-    setBaseSupport
+    setBaseSupport,
+    setResourcesCommitted,
+    fetchInterest,
+    castInterest
   }
 }

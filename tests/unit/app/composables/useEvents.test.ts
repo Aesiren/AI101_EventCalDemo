@@ -100,4 +100,48 @@ describe('useEvents', () => {
     expect(result).toEqual(updated)
     expect(events.value).toEqual([updated, EVENT_B])
   })
+
+  it('setResourcesCommitted() PATCHes the flag and updates the matching event in state (US-2.6)', async () => {
+    const updated: Event = { ...EVENT_A, resourcesCommitted: true }
+    const fetchMock = vi.fn().mockResolvedValue(updated)
+    const { events, setResourcesCommitted } = useEvents()
+    events.value = [EVENT_A, EVENT_B]
+
+    const result = await setResourcesCommitted('event-1', true, fetchMock as never)
+
+    expect(fetchMock).toHaveBeenCalledWith('/api/events/event-1/resources', {
+      method: 'PATCH',
+      body: { resourcesCommitted: true }
+    })
+    expect(result).toEqual(updated)
+    expect(events.value).toEqual([updated, EVENT_B])
+  })
+
+  it('fetchInterest() fetches the vote count and my interest for one event (US-2.1-2.4)', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ voteCount: 2, myInterest: 'vote' })
+    const { fetchInterest } = useEvents()
+
+    const result = await fetchInterest('event-1', fetchMock as never)
+
+    expect(fetchMock).toHaveBeenCalledWith('/api/events/event-1/interest')
+    expect(result).toEqual({ voteCount: 2, myInterest: 'vote' })
+  })
+
+  it('castInterest() posts to /vote for a "vote" kind (US-2.1)', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(EVENT_A)
+    const { castInterest } = useEvents()
+
+    await castInterest('event-1', 'vote', fetchMock as never)
+
+    expect(fetchMock).toHaveBeenCalledWith('/api/events/event-1/vote', { method: 'POST' })
+  })
+
+  it('castInterest() posts to /volunteer for a "volunteer" kind (US-2.3)', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(EVENT_A)
+    const { castInterest } = useEvents()
+
+    await castInterest('event-1', 'volunteer', fetchMock as never)
+
+    expect(fetchMock).toHaveBeenCalledWith('/api/events/event-1/volunteer', { method: 'POST' })
+  })
 })

@@ -108,6 +108,19 @@ export function createStore(options: StoreOptions = {}) {
     return interests.map(i => ({ ...i }))
   }
 
+  function getVoteCount(eventId: string): number {
+    return interests.filter(i => i.eventId === eventId && i.kind === 'vote').length
+  }
+
+  function getMyInterest(accountId: string, eventId: string): InterestKind | null {
+    const found = interests.find(i => i.accountId === accountId && i.eventId === eventId)
+    return found ? found.kind : null
+  }
+
+  function getVolunteers(eventId: string): string[] {
+    return interests.filter(i => i.eventId === eventId && i.kind === 'volunteer').map(i => i.accountId)
+  }
+
   return {
     listAccounts,
     findAccountByName,
@@ -117,7 +130,10 @@ export function createStore(options: StoreOptions = {}) {
     setBaseSupport,
     setResourcesCommitted,
     castInterest,
-    listInterests
+    listInterests,
+    getVoteCount,
+    getMyInterest,
+    getVolunteers
   }
 }
 

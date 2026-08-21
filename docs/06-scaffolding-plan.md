@@ -39,7 +39,8 @@ Nuxt 4 changed the default project layout: `pages/`, `components/`, `composables
 │   │   ├── AiAssistPanel.vue         conversational fill/correct/reject UI (US-1.5–US-1.9)
 │   │   ├── BaseSupportToggle.vue     Leader-only control (US-1.12)
 │   │   ├── ResourcesCommittedToggle.vue  Leader-only control (US-2.6)
-│   │   └── VoteControls.vue          vote/volunteer buttons (Phase 2)
+│   │   ├── VoteControls.vue          vote/volunteer buttons, self-hidden on own events (US-2.1-2.3)
+│   │   └── VoteCount.vue             read-only vote total + volunteer names, for leader.vue (US-2.4, US-2.5)
 │   ├── composables/
 │   │   ├── useAuth.ts                current account/session state (US-1.13), plus listAccounts() for the login dropdown
 │   │   └── useEvents.ts              fetch + mutate events against the API, plus fetchEvent() for the detail page
@@ -58,6 +59,7 @@ Nuxt 4 changed the default project layout: `pages/`, `components/`, `composables
 │   │   ├── events/[id]/vote.post.ts      FR-7 (Phase 2)
 │   │   ├── events/[id]/volunteer.post.ts FR-8 (Phase 2)
 │   │   ├── events/[id]/resources.patch.ts FR-9, Leader-only (Phase 2)
+│   │   ├── events/[id]/interest.get.ts   vote count + viewer's own interest, for VoteControls/VoteCount (US-2.1-2.4); also includes volunteer names, Leader-viewer only
 │   │   └── agent/assist.post.ts          FR-3, FR-4
 │   └── utils/
 │       ├── store.ts               the in-memory data store — single source of truth

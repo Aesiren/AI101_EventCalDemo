@@ -7,7 +7,9 @@
     <ul v-else class="event-list">
       <li v-for="event in events" :key="event.id">
         <EventCard :event="event" />
+        <VoteCount :event="event" />
         <BaseSupportToggle :event="event" />
+        <ResourcesCommittedToggle :event="event" />
       </li>
     </ul>
   </main>

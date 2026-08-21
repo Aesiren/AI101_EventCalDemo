@@ -74,6 +74,17 @@ export interface Interest {
   kind: InterestKind
 }
 
+// Response shape for GET /api/events/:id/interest (US-2.1–US-2.4). Kept separate from Event
+// itself — voteCount and myInterest are derived/viewer-specific, not intrinsic Event properties,
+// and adding them to Event directly would ripple through every existing fixture in the codebase.
+export interface EventInterestSummary {
+  voteCount: number
+  /** null if the viewer isn't logged in, or hasn't voted/volunteered on this event. */
+  myInterest: InterestKind | null
+  /** Display names of everyone volunteering. Present only when the viewer is a Leader. */
+  volunteers?: string[]
+}
+
 // Discriminated union so a 'clear' result can't carry a stray guideline/message by mistake.
 export type GuidelineResult =
   | { status: 'clear' }

@@ -9,6 +9,7 @@
         <NuxtLink :to="`/events/${event.id}`">
           <EventCard :event="event" />
         </NuxtLink>
+        <VoteControls :event="event" />
       </li>
     </ul>
   </main>

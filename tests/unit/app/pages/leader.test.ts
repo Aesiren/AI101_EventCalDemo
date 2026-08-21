@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { ref } from 'vue'
+import { flushPromises } from '@vue/test-utils'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import LeaderPage from '../../../../app/pages/leader.vue'
 import type { Event } from '../../../../shared/types'
@@ -20,16 +21,19 @@ const EVENT_A: Event = {
 const refreshMock = vi.fn().mockResolvedValue([])
 let mockEvents = ref<Event[]>([])
 
-// BaseSupportToggle renders for real inside this page (not mocked out) — so both useEvents and
-// useAuth need mocking here, using real refs (see the lesson documented in
-// BaseSupportToggle.test.ts about plain { value } objects silently breaking v-if).
+// BaseSupportToggle, ResourcesCommittedToggle, and VoteCount all render for real inside this page
+// (not mocked out) — so useEvents and useAuth need mocking here, using real refs (see the lesson
+// documented in BaseSupportToggle.test.ts about plain { value } objects silently breaking v-if).
 vi.mock('../../../../app/composables/useEvents', () => ({
   useEvents: () => ({
     events: mockEvents,
     refresh: refreshMock,
     createEvent: vi.fn(),
     fetchEvent: vi.fn(),
-    setBaseSupport: vi.fn()
+    setBaseSupport: vi.fn(),
+    setResourcesCommitted: vi.fn(),
+    fetchInterest: vi.fn().mockResolvedValue({ voteCount: 0, myInterest: null }),
+    castInterest: vi.fn()
   })
 }))
 
@@ -57,10 +61,12 @@ describe('leader page', () => {
     expect(wrapper.text()).toMatch(/no events/i)
   })
 
-  it('renders an EventCard and a BaseSupportToggle for each event (US-1.11, US-1.12)', async () => {
+  it('renders an EventCard, vote count, and both Leader toggles for each event (US-1.11, US-1.12, US-2.4, US-2.6)', async () => {
     mockEvents = ref([EVENT_A])
     const wrapper = await mountSuspended(LeaderPage)
+    await flushPromises()
     expect(wrapper.text()).toContain('Community Cookout')
-    expect(wrapper.find('button').exists()).toBe(true)
+    expect(wrapper.text()).toMatch(/0 votes/)
+    expect(wrapper.findAll('button')).toHaveLength(2)
   })
 })

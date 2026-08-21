@@ -28,7 +28,24 @@ vi.mock('../../../../../app/composables/useEvents', () => ({
     events: mockEvents,
     refresh: refreshMock,
     createEvent: vi.fn(),
-    fetchEvent: vi.fn()
+    fetchEvent: vi.fn(),
+    setBaseSupport: vi.fn(),
+    // VoteControls renders for real inside each event card here (not mocked out) — see its own
+    // test file for the behaviors these back.
+    fetchInterest: vi.fn().mockResolvedValue({ voteCount: 0, myInterest: null }),
+    castInterest: vi.fn()
+  })
+}))
+
+// VoteControls also calls useAuth() directly — not logged in by default here means it renders
+// nothing, keeping this page's own tests focused on the event list itself.
+vi.mock('../../../../../app/composables/useAuth', () => ({
+  useAuth: () => ({
+    currentAccount: ref(null),
+    isLeader: ref(false),
+    login: vi.fn(),
+    logout: vi.fn(),
+    listAccounts: vi.fn()
   })
 }))
 

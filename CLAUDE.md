@@ -115,8 +115,13 @@ SDK client. Don't break this boundary for convenience.
 
 ## Status / known gaps
 
-- Milestones 1 and 2 complete. Milestone 3 (AI layer) in progress — see `docs/07-milestones.md`
-  for the current step list.
+- Milestones 1–4 complete — **Phase 1 and Phase 2 both done.** Milestone 5 (Phase 3 —
+  Beautification) is next — see `docs/07-milestones.md` for the current step list.
+- Vote/interest data (`voteCount`, `myInterest`) is deliberately kept off the `Event` type itself
+  — it's viewer-specific and derived, not intrinsic. Fetched separately via
+  `GET /api/events/:id/interest` (`useEvents().fetchInterest()`), consumed by `VoteControls.vue`
+  and `VoteCount.vue`, each fetching their own on `onMounted` rather than blocking the hosting
+  page's initial render.
 - `typescript` + `vue-tsc` are installed and `npx nuxi typecheck` passes clean (see the `^6` pin
   note above for why the version matters).
 - **Fixed: always mock `navigateTo` in tests, never let it run for real.** A real `navigateTo()`

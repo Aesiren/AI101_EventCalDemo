@@ -118,6 +118,59 @@ describe('store', () => {
     expect(interests[0]?.kind).toBe('vote')
   })
 
+  it('counts votes for an event, ignoring volunteers (US-2.4)', () => {
+    const store = createStore()
+    const event = store.createEvent(baseInput({ submittedBy: 'user-1' }))
+    store.castInterest('user-2', event.id, 'vote')
+    expect(store.getVoteCount(event.id)).toBe(1)
+  })
+
+  it('does not count a volunteer as a vote', () => {
+    const store = createStore()
+    const event = store.createEvent(baseInput({ submittedBy: 'user-1' }))
+    store.castInterest('user-2', event.id, 'volunteer')
+    expect(store.getVoteCount(event.id)).toBe(0)
+  })
+
+  it('returns 0 votes for an event nobody has voted on', () => {
+    const store = createStore()
+    const event = store.createEvent(baseInput())
+    expect(store.getVoteCount(event.id)).toBe(0)
+  })
+
+  it('reports a specific account\'s interest kind for an event, for "already voted" UI state', () => {
+    const store = createStore()
+    const event = store.createEvent(baseInput({ submittedBy: 'user-1' }))
+    store.castInterest('user-2', event.id, 'volunteer')
+    expect(store.getMyInterest('user-2', event.id)).toBe('volunteer')
+  })
+
+  it('returns null interest for an account that has not voted or volunteered', () => {
+    const store = createStore()
+    const event = store.createEvent(baseInput())
+    expect(store.getMyInterest('user-2', event.id)).toBeNull()
+  })
+
+  it('lists the account ids of everyone volunteering for an event, for Leader visibility', () => {
+    const store = createStore()
+    const event = store.createEvent(baseInput({ submittedBy: 'user-1' }))
+    store.castInterest('user-2', event.id, 'volunteer')
+    expect(store.getVolunteers(event.id)).toEqual(['user-2'])
+  })
+
+  it('does not list a voter as a volunteer', () => {
+    const store = createStore()
+    const event = store.createEvent(baseInput({ submittedBy: 'user-1' }))
+    store.castInterest('user-2', event.id, 'vote')
+    expect(store.getVolunteers(event.id)).toEqual([])
+  })
+
+  it('returns an empty list when nobody has volunteered', () => {
+    const store = createStore()
+    const event = store.createEvent(baseInput())
+    expect(store.getVolunteers(event.id)).toEqual([])
+  })
+
   it('keeps separate store instances independent (no shared global state)', () => {
     const storeA = createStore()
     const storeB = createStore()

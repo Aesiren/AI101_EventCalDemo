@@ -82,11 +82,28 @@ export type GuidelineResult =
 
 // One turn of the AI-assisted submission flow (server/utils/agent.ts). Just a data shape — no
 // guideline text or prompt content lives in this type, so it's safe for the client to know about.
-export interface AgentTurnResult {
-  proposedFields: Partial<CreateEventInput>
-  missingFields: (keyof CreateEventInput)[]
-  guidelineResult: GuidelineResult
-  /** Present whenever readyToSubmit is false — what to ask/tell the user next. */
-  followUpQuestion?: string
-  readyToSubmit: boolean
+//
+// Discriminated on readyToSubmit so a caller narrowing on `true` gets proposedFields typed as a
+// complete CreateEventInput (not Partial) — no unsafe cast needed to hand it to createEvent().
+export type AgentTurnResult =
+  | {
+      readyToSubmit: true
+      proposedFields: CreateEventInput
+      missingFields: []
+      guidelineResult: { status: 'clear' }
+    }
+  | {
+      readyToSubmit: false
+      proposedFields: Partial<CreateEventInput>
+      missingFields: (keyof CreateEventInput)[]
+      guidelineResult: GuidelineResult
+      followUpQuestion: string
+    }
+
+// The request body for POST /api/agent/assist. `conversation` is the growing history of prior
+// turns, owned by the client (AiAssistPanel) as plain text — no Anthropic SDK types are ever
+// exposed to app/. `userInput` is the newest thing the user just typed.
+export interface AssistRequest {
+  conversation: { role: 'user' | 'assistant'; content: string }[]
+  userInput: string
 }

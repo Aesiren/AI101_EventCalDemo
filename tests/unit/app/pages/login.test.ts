@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { mountSuspended } from '@nuxt/test-utils/runtime'
+import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime'
 import LoginPage from '../../../../app/pages/login.vue'
 import type { Account } from '../../../../shared/types'
 
@@ -9,8 +9,18 @@ const ACCOUNTS: Account[] = [
   { id: 'leader-1', name: 'Morgan Hayes', role: 'Leader' }
 ]
 
-const listAccountsMock = vi.fn().mockResolvedValue(ACCOUNTS)
-const loginMock = vi.fn().mockResolvedValue(ACCOUNTS[0])
+const { listAccountsMock, loginMock, navigateToMock } = vi.hoisted(() => ({
+  listAccountsMock: vi.fn(),
+  loginMock: vi.fn(),
+  navigateToMock: vi.fn()
+}))
+listAccountsMock.mockResolvedValue(ACCOUNTS)
+loginMock.mockResolvedValue(ACCOUNTS[0])
+
+// Mocking navigateTo rather than letting a real post-login navigation run — see the note in
+// tests/unit/app/layouts/default.test.ts for why (an occasional "history is not defined"
+// unhandled rejection under happy-dom).
+mockNuxtImport('navigateTo', () => navigateToMock)
 
 // Explicit import in the page (not Nuxt auto-import) makes this a plain vi.mock — same reasoning
 // as EventForm/index.vue's useEvents mocking.
@@ -42,12 +52,14 @@ describe('login page', () => {
     expect((wrapper.find('button[type=submit]').element as HTMLButtonElement).disabled).toBe(false)
   })
 
-  it('logs in with the exact selected account name on submit (US-1.13)', async () => {
+  it('logs in with the exact selected account name on submit and navigates home (US-1.13)', async () => {
     loginMock.mockClear()
+    navigateToMock.mockClear()
     const wrapper = await mountSuspended(LoginPage)
     await wrapper.find('select').setValue('Morgan Hayes')
     await wrapper.find('form').trigger('submit.prevent')
     await wrapper.vm.$nextTick()
     expect(loginMock).toHaveBeenCalledWith('Morgan Hayes')
+    expect(navigateToMock).toHaveBeenCalledWith('/')
   })
 })

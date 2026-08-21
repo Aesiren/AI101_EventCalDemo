@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { ref } from 'vue'
-import { mountSuspended } from '@nuxt/test-utils/runtime'
+import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime'
 import IndexPage from '../../../../app/pages/index.vue'
 import type { Account } from '../../../../shared/types'
 
@@ -20,6 +20,12 @@ vi.mock('../../../../app/composables/useAuth', () => ({
   })
 }))
 
+// Mocking navigateTo rather than letting the real logged-out redirect run — see the note in
+// tests/unit/app/layouts/default.test.ts for why (an occasional "history is not defined"
+// unhandled rejection under happy-dom).
+const { navigateToMock } = vi.hoisted(() => ({ navigateToMock: vi.fn() }))
+mockNuxtImport('navigateTo', () => navigateToMock)
+
 describe('home page', () => {
   it('shows a welcome message and nav for a logged-in User (no redirect away)', async () => {
     mockCurrentAccount = ref(USER)
@@ -38,9 +44,11 @@ describe('home page', () => {
     expect(wrapper.find('a[href="/leader"]').exists()).toBe(true)
   })
 
-  it('redirects a logged-out visitor to /login without throwing', async () => {
+  it('redirects a logged-out visitor to /login', async () => {
     mockCurrentAccount = ref(null)
     mockIsLeader = ref(false)
-    await expect(mountSuspended(IndexPage)).resolves.toBeTruthy()
+    navigateToMock.mockClear()
+    await mountSuspended(IndexPage)
+    expect(navigateToMock).toHaveBeenCalledWith('/login')
   })
 })

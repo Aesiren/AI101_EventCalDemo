@@ -2,16 +2,27 @@ import { describe, expect, it, vi } from 'vitest'
 import { assist } from '../../../server/utils/agent'
 import type Anthropic from '@anthropic-ai/sdk'
 
-// Builds a fake Anthropic client whose messages.create() always returns a single tool_use block
-// with the given input — exactly the shape agent.ts reads (a forced tool call, per the design).
-// Cast `as never` when passed to assist(), matching the injectable-dependency pattern already
-// established for $fetch (see CLAUDE.md) — real Anthropic's create() signature is far wider than
-// this test needs to satisfy.
+// Builds a fake Anthropic client whose beta.messages.create() always returns a single tool_use
+// block with the given input — exactly the shape agent.ts reads (a forced tool call on the beta
+// endpoint, needed for refusal fallbacks). Cast `as never` when passed to assist(), matching the
+// injectable-dependency pattern already established for $fetch (see CLAUDE.md) — real Anthropic's
+// create() signature is far wider than this test needs to satisfy.
 function mockClient(toolInput: Record<string, unknown>) {
   const create = vi.fn().mockResolvedValue({
+    stop_reason: 'tool_use',
     content: [{ type: 'tool_use', id: 'toolu_1', name: 'propose_event_fields', input: toolInput }]
   })
-  return { client: { messages: { create } }, create }
+  return { client: { beta: { messages: { create } } }, create }
+}
+
+// A refusal has no tool_use block to read — content is typically empty or text-only.
+function mockRefusalClient() {
+  const create = vi.fn().mockResolvedValue({
+    stop_reason: 'refusal',
+    stop_details: { type: 'refusal', category: null, explanation: 'declined' },
+    content: []
+  })
+  return { client: { beta: { messages: { create } } }, create }
 }
 
 const COMPLETE_FIELDS = {
@@ -180,5 +191,16 @@ describe('assist', () => {
     })
     const result = await assist([], 'text', client as never)
     expect(result.guidelineResult.status).toBe('rejected')
+  })
+
+  // --- Refusal handling (Opus 5 safety classifiers can decline; fallbacks handle most cases
+  // server-side, but the final response can still come back as a refusal if every attempt did) ---
+
+  it('handles a refusal gracefully instead of crashing or misreading it as "nothing extracted"', async () => {
+    const { client } = mockRefusalClient()
+    const result = await assist([], 'some input', client as never)
+    expect(result.readyToSubmit).toBe(false)
+    expect(result.proposedFields).toEqual({})
+    expect(result.followUpQuestion).toBeTruthy()
   })
 })

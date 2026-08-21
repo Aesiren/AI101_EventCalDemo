@@ -68,22 +68,47 @@ function buildMissingFieldsQuestion(missing: (typeof REQUIRED_FIELDS)[number][])
   return `Could you tell me the event's ${joined}?`
 }
 
+// A follow-up shown when the model declines to respond (Opus 5 safety classifiers) and no
+// fallback attempt succeeded either — distinct from "you didn't give me enough info yet".
+const REFUSAL_FOLLOW_UP =
+  "I wasn't able to process that. Could you rephrase your event idea and try again?"
+
 export async function assist(
-  conversation: Anthropic.MessageParam[],
+  conversation: Anthropic.Beta.BetaMessageParam[],
   userInput: string,
   client: Anthropic
 ): Promise<AgentTurnResult> {
-  const response = await client.messages.create({
-    model: 'claude-sonnet-5',
+  // client.beta.messages.create (not the plain messages endpoint) because refusal fallbacks
+  // (fallbacks: 'default') require it — see docs/07-milestones.md Milestone 3 notes. Opus 5's
+  // safety classifiers can decline a request; this retries server-side on a sensible fallback
+  // model automatically rather than just failing the whole turn.
+  const response = await client.beta.messages.create({
+    model: 'claude-opus-5',
     max_tokens: 1024,
+    betas: ['server-side-fallback-2026-07-01'],
+    fallbacks: 'default',
+    thinking: { type: 'adaptive' },
+    output_config: { effort: 'low' }, // narrow extraction task — low effort is plenty
     system: EXTRACTION_SYSTEM_PROMPT,
     tools: [EXTRACT_FIELDS_TOOL],
     tool_choice: { type: 'tool', name: EXTRACT_FIELDS_TOOL.name },
     messages: [...conversation, { role: 'user', content: userInput }]
   })
 
+  // A refusal (even after fallback attempts) has no tool_use block to read — handle it
+  // explicitly rather than letting it silently look like "nothing was extracted."
+  if (response.stop_reason === 'refusal') {
+    return {
+      proposedFields: {},
+      missingFields: [...REQUIRED_FIELDS],
+      guidelineResult: { status: 'clear' },
+      followUpQuestion: REFUSAL_FOLLOW_UP,
+      readyToSubmit: false
+    }
+  }
+
   const toolUse = response.content.find(
-    (block): block is Anthropic.ToolUseBlock => block.type === 'tool_use'
+    (block): block is Anthropic.Beta.BetaToolUseBlock => block.type === 'tool_use'
   )
   const proposedFields = sanitizeFields((toolUse?.input as Record<string, unknown>) ?? {})
 
@@ -122,10 +147,15 @@ export async function assist(
     }
   }
 
+  // Reaching here means: not rejected, not missing any field, not correctable — i.e. every
+  // required field is present and guidelineResult.status is 'clear'. The two checks above prove
+  // it at runtime; TypeScript can't narrow proposedFields/guidelineResult from "missingFields is
+  // empty" the way a discriminated union needs, so this cast is asserting exactly what was just
+  // established, not bypassing it.
   return {
-    proposedFields,
+    proposedFields: proposedFields as CreateEventInput,
     missingFields: [],
-    guidelineResult,
+    guidelineResult: guidelineResult as { status: 'clear' },
     readyToSubmit: true
   }
 }

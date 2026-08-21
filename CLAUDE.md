@@ -86,12 +86,14 @@ SDK client. Don't break this boundary for convenience.
 - Component tests use `mountSuspended` from `@nuxt/test-utils/runtime`, which needs
   `@vue/test-utils` (installed as a dev dependency — it's an optional peer of `@nuxt/test-utils`,
   not pulled in automatically).
-- Composables that call `$fetch` (or other Nuxt auto-imports like `navigateTo`) take an
-  **injectable dependency** with a real default, rather than relying on Nuxt's auto-import mocking
-  — `vi.stubGlobal('$fetch', ...)` does not reliably intercept it (see
-  github.com/nuxt/test-utils/issues/291). Pattern: `login(name, fetcher = $fetch)`, tests pass a
-  mock fetcher directly. Follow this pattern for new composables/middleware rather than fighting
-  Nuxt's auto-import mocking.
+- Composables that call `$fetch` take an **injectable dependency** with a real default, rather
+  than relying on Nuxt's auto-import mocking — `vi.stubGlobal('$fetch', ...)` does not reliably
+  intercept it (see github.com/nuxt/test-utils/issues/291). Pattern: `login(name, fetcher =
+  $fetch)`, tests pass a mock fetcher directly. Follow this pattern for new composables.
+- `navigateTo` is different — it mocks cleanly via `mockNuxtImport('navigateTo', () =>
+  navigateToMock)` from `@nuxt/test-utils/runtime` (wrap the mock fn in `vi.hoisted()` — the
+  factory is hoisted above regular top-level `const`s, same as `vi.mock`). Always mock it in
+  component tests rather than letting it run for real — see the Status section below for why.
 - Tests are written before implementation (TDD), following **Red → Green → Refactor**:
   1. **Red** — write a test for the behavior first and confirm it fails (the code it needs doesn't exist yet).
   2. **Green** — write the minimum implementation needed to make that test pass.
@@ -113,10 +115,22 @@ SDK client. Don't break this boundary for convenience.
 
 ## Status / known gaps
 
-- Milestone 1 complete. Milestone 2 (Core CRUD, no AI) in progress — see
-  `docs/07-milestones.md` for the current step list.
+- Milestones 1 and 2 complete. Milestone 3 (AI layer) in progress — see `docs/07-milestones.md`
+  for the current step list.
 - `typescript` + `vue-tsc` are installed and `npx nuxi typecheck` passes clean (see the `^6` pin
   note above for why the version matters).
+- **Fixed: always mock `navigateTo` in tests, never let it run for real.** A real `navigateTo()`
+  call under `mountSuspended` (previously left unmocked in `login.vue`, `index.vue`, and
+  `default.vue`'s tests) could leave an in-flight navigation Promise that settles after its own
+  test tears down, occasionally surfacing as an "Unhandled Rejection: ReferenceError: history is
+  not defined" from inside `vue-router`, attributed to whichever unrelated test happened to be
+  running when it landed. Confirmed non-deterministic (roughly 1-in-3 full-suite runs) before the
+  fix, and 8-for-8 clean after. Fix: `mockNuxtImport('navigateTo', () => navigateToMock)` from
+  `@nuxt/test-utils/runtime` — this works cleanly for `navigateTo`, unlike the equivalent approach
+  for `$fetch` (different auto-import, no equivalent known bug). Requires `vi.hoisted()` for the
+  mock function itself, since `mockNuxtImport`'s factory is hoisted above regular top-level
+  `const`s, same as `vi.mock`. This is now the standing pattern — new tests that exercise a
+  `navigateTo` call should mock it this way rather than letting it run for real.
 - Login only persists in client-side reactive state for the current page session (no
   session-restore endpoint) — a hard refresh or a fresh server-rendered request (e.g. `curl`)
   always looks logged-out, even with a valid login cookie present. Deliberate scope decision,

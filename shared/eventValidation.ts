@@ -1,9 +1,11 @@
-// Presence validation for POST /api/events (FR-2, US-1.4). Deliberately presence-only, no
+// Presence validation for a new event submission (FR-2, US-1.4). Deliberately presence-only, no
 // length/format rules — see docs/04-test-scenario-inventory.md: "no min/max length or character
-// rules exist for this demo." Pure function so it's testable without the route/store machinery.
+// rules exist for this demo." Pure function, no framework dependency — lives in shared/ (not
+// server/utils/) because both the server route (defense in depth) and EventForm.vue (immediate
+// UI feedback) need the identical rule, and duplicating it would let the two drift apart.
 
-import type { CreateEventInput } from '../../shared/types'
-import { EVENT_TYPES } from '../../shared/types'
+import type { CreateEventInput } from './types'
+import { EVENT_TYPES } from './types'
 
 // On success, `value` carries the input narrowed to CreateEventInput — so callers don't need
 // non-null assertions to use it, the type system proves it's safe.

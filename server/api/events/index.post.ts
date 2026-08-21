@@ -1,7 +1,7 @@
 // Manual event creation (FR-2, US-1.3, US-1.4). submittedBy comes from the login cookie, never
 // from the request body — see the CreateEventInput comment in shared/types.ts for why.
 
-import { validateCreateEventInput } from '../../utils/eventValidation'
+import { validateCreateEventInput } from '../../../shared/eventValidation'
 import { store } from '../../utils/store'
 
 export default defineEventHandler(async (event) => {

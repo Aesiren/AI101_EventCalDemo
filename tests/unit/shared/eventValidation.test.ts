@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { validateCreateEventInput } from '../../../server/utils/eventValidation'
+import { validateCreateEventInput } from '../../../shared/eventValidation'
 
 function baseBody(overrides: Record<string, unknown> = {}) {
   return {

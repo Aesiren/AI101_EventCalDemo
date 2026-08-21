@@ -26,8 +26,8 @@ Requirement statements below are the "what must exist" summary; the *testable* d
 - **FR-9** Leader decision inputs — vote totals visible per event, and a Resources Committed flag visible and Leader-toggleable per event (mirrors Base support). *(US-2.4, US-2.5, US-2.6)*
 
 ### Phase 3
-- **FR-10** Calendar view — events shown on their date. *(US-3.1)*
-- **FR-11** Chart view — events ranked by vote count, ties broken by insertion order. *(US-3.2)*
+- **FR-10** Calendar view — events shown on their date, for a month the User can navigate to (not just the current one), plus an always-visible "today" panel independent of the viewed month. *(US-3.1, extended Milestone 7)*
+- **FR-11** Chart view — events ranked by vote count (ties broken by insertion order), truncated to the top two. *(US-3.2, extended Milestone 7)*
 - **FR-12** Needs-voting view — events the current user hasn't voted on, newest first. *(US-3.3)*
 - **FR-13** Home dashboard — every currently-navigable page section shown as a clickable entry, filtered by role (Leader Review only for Leaders). *(US-3.4)*
 - **FR-14** Consistent styling — one component library/visual language used across every page. *(US-3.5)*
@@ -74,7 +74,7 @@ Only the two "irreparable" rows bypass the correction path; every other conflict
 - **AI security posture** — guideline enforcement should be reasonably resistant to prompt injection for demonstration purposes ([US-1.10](./03-acceptance-criteria.md)); this is not a claim of production-grade robustness.
 - **Performance/scale** — none specified; assume small, single-session demo data volumes.
 - **Timezones/recurrence** — explicitly out of scope (see below); a single implicit timezone and non-recurring events are assumed throughout, including the calendar view.
-- **Styling** — [Nuxt UI](https://ui.nuxt.com) (v4+, built on Tailwind CSS 4 + Reka UI), chosen for tight Nuxt integration and because its free tier now includes dashboard-layout components (formerly a paid "Pro" feature) that fit US-3.4 directly. No other component library or hand-rolled design system should be introduced alongside it — one system, applied consistently, is the whole point of US-3.5.
+- **Styling** — [Nuxt UI](https://ui.nuxt.com) (v4+, built on Tailwind CSS 4 + Reka UI), chosen for tight Nuxt integration and because its free tier now includes dashboard-layout components (formerly a paid "Pro" feature) that fit US-3.4 directly. No other component library or hand-rolled design system should be introduced alongside it — one system, applied consistently, is the whole point of US-3.5. Primary/highlight color: **blue** (`app/app.config.ts`'s `ui.colors.primary`), changed from Nuxt UI's default green at your request, Milestone 7.
 
 ## Definition of Done (per story)
 

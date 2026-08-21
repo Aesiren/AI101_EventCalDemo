@@ -140,8 +140,12 @@ SDK client. Don't break this boundary for convenience.
 
 ## Status / known gaps
 
-- **All 6 milestones complete.** Phase 1, Phase 2, UI Consistency & Navigation, and Phase 3
-  (Beautification — calendar, chart, needs-voting) are all built. See `docs/07-milestones.md`.
+- **Milestones 1–6 complete** — Phase 1, Phase 2, UI Consistency & Navigation, and Phase 3
+  (Beautification — calendar, chart, needs-voting) are all built and verified (191/191 tests,
+  typecheck clean). A new **Milestone 7 — Cleanup** is documented in `docs/07-milestones.md` but
+  not yet built as of this writing: primary color → blue, calendar month navigation + a "today"
+  panel, redirect to `/calendar` after submitting, chart truncated to the top two, and more varied
+  seed data.
 - **Volunteering counts as a vote, not an alternative to one** (US-2.3, revised after Milestone 5
   at your request) — `store.ts`'s `getVoteCount()` counts Interest records of kind `'vote'` *or*
   `'volunteer'`. The `kind` field still distinguishes the two for "already voted"/"already

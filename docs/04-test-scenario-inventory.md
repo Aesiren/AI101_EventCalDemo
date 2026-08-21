@@ -115,14 +115,19 @@ Validation covers presence only — no min/max length or character-format rules 
 
 ## Phase 3 — Beautification
 
-### US-3.1 — Calendar view
+### US-3.1 — Calendar view (extended, Milestone 7)
 - **TC-3.1-01** (happy) — Events with current-month dates appear on their correct day.
 - **TC-3.1-02** (edge) — A day with no events renders empty without error.
 - **TC-3.1-03** (edge) — Events on the first/last day of the month render in the correct cell (month-boundary handling).
+- **TC-3.1-04** (happy) — Navigating to the next month re-renders the grid for that month, with its own events on their correct days.
+- **TC-3.1-05** (happy) — Navigating to the previous month works the same way (symmetric reverse of TC-3.1-04).
+- **TC-3.1-06** (happy) — An event dated today appears in the "today" panel regardless of which month the grid is currently showing.
+- **TC-3.1-07** (edge) — No events today → the "today" panel shows an explicit empty state, not nothing.
 
-### US-3.2 — Chart view of top-voted events
+### US-3.2 — Chart view of top-voted events (extended, Milestone 7)
 - **TC-3.2-01** (happy) — Events display ranked by vote count, highest first.
 - **TC-3.2-02** (edge) — Two events tied on vote count render in insertion order (earlier-submitted event first).
+- **TC-3.2-03** (happy) — With more than two events, only the top two are rendered.
 
 ### US-3.3 — Needs-voting view
 - **TC-3.3-01** (happy) — Events the current User hasn't voted on are listed, newest first.

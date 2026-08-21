@@ -159,6 +159,49 @@ what "no new server contracts" meant in practice, and a few small additions beyo
 - Calendar/Votes are public reads in the header nav (viewable logged out, same as Events); Needs
   Voting only appears once logged in, same as Submit Event.
 
+## Milestone 7 — Cleanup
+
+Six small fixes requested after Milestone 6 shipped — not new product features, so most don't get
+new story/AC/TC entries (see the Milestone 7 note in [02-user-stories.md](./02-user-stories.md)).
+Two are real behavior changes against existing stories and do have full AC/TC coverage: US-3.1
+(FR-10) and US-3.2 (FR-11) — see [03-acceptance-criteria.md](./03-acceptance-criteria.md) and
+[04-test-scenario-inventory.md](./04-test-scenario-inventory.md).
+
+1. **Highlight color → blue.** Add `app/app.config.ts` with `ui.colors.primary: 'blue'` (Nuxt UI
+   defaults to green — see the Styling NFR in `05-spec.md`). One file, no component changes —
+   every `UButton`/`UBadge`/focus-ring/active-nav-link that uses the `primary` color token picks
+   it up automatically.
+2. **Calendar month navigation (US-3.1, TC-3.1-04/05).** `calendar.vue`'s `referenceDate` becomes
+   a `ref` instead of a `const`, with previous/next `UButton`s that step it a month at a time; the
+   existing `groupEventsByDate(events, referenceDate)` call already reacts to that correctly since
+   it's a pure function of its arguments — no change needed to the helper itself. Test first:
+   clicking next/previous re-renders the grid for the new month, still correctly bucketing that
+   month's events.
+3. **Post-submission redirect to the calendar.** `submit.vue`'s `handleSubmitted` calls
+   `navigateTo('/calendar')` instead of (not in addition to) setting the inline "Event submitted —
+   thank you!" alert — the confirmation now *is* landing on a calendar that shows the just-created
+   event, not a message on the page you're leaving. Update `submit.test.ts` to assert
+   `navigateTo('/calendar')` was called (mocked, per the standing `navigateTo` pattern in
+   `CLAUDE.md`) instead of checking for inline confirmation text.
+4. **Chart view shows the top two (US-3.2, TC-3.2-03).** `votes.vue` slices `ranked.value` to its
+   first two entries before rendering. `rankEventsByVotes` itself is unchanged — it still ranks
+   every event; only the page-level render is truncated, so the tie-break-by-insertion-order
+   guarantee still applies to *which* two end up on top (see Confirmed clarification #5 in
+   `03-acceptance-criteria.md`).
+5. **Calendar "today" panel (US-3.1, TC-3.1-06/07).** A small section on `calendar.vue`, separate
+   from the navigable month grid, listing events whose date matches the real current date —
+   computed independently of `referenceDate` so browsing to a different month never hides it. Empty
+   state ("No events today.") when there are none, same pattern as every other empty-state message
+   in the app.
+6. **More seed-data variety, no new accounts.** Extend `server/utils/seed.ts`: use all three
+   existing seeded accounts (`user-1`, `user-2`, and — not currently used for interests —
+   `leader-1`) as voters/volunteers across more events, so vote totals actually differ from each
+   other instead of clustering at 0/1. Add 1–2 more events for volume, and seed one event dated on
+   the real current date (`new Date()`, not a fixed string) specifically so step 5's "today" panel
+   has something to show in a fresh `npm run dev`. Not unit-tested — `seedDemoData()` is only ever
+   applied to the singleton `store`, never to `createStore()` test instances (see `store.ts`'s own
+   comment on this), so there's nothing here for Vitest to assert against.
+
 ## Traceability
 
 Each milestone's action list should be read alongside [04-test-scenario-inventory.md](./04-test-scenario-inventory.md) (the tests being written) and [06-scaffolding-plan.md](./06-scaffolding-plan.md) (the contracts and folder locations). This doc is the "in what order, concretely" layer on top of both.

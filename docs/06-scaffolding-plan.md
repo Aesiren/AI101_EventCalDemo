@@ -26,6 +26,7 @@ Nuxt 4 changed the default project layout: `pages/`, `components/`, `composables
 │       └── filterNeedsVoting.ts      "hasn't voted/volunteered yet, excluding own events" filter for needs-voting.vue
 ├── app/
 │   ├── app.vue
+│   ├── app.config.ts             ui.colors.primary: 'blue' (Milestone 7 — Nuxt UI's default is green)
 │   ├── pages/
 │   │   ├── index.vue                 not logged in -> /login; logged in -> a dashboard of every navigable section, role-filtered (US-3.4)
 │   │   ├── login.vue                 US-1.13 — mock login

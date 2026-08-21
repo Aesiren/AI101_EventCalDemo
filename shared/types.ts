@@ -9,6 +9,14 @@ export interface Account {
   role: Role
 }
 
+// Mock login only (US-1.13) — no real credential security. The client picks a pre-seeded
+// account by id; the server validates it exists and returns the matching Account. No token/
+// session shape needed: the current account id is carried in a cookie after login, and the
+// response here is the Account itself.
+export interface LoginRequest {
+  accountId: string
+}
+
 // Fixed category list, confirmed in docs/00-idea-capture.md.
 export const EVENT_TYPES = [
   'Social',

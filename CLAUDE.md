@@ -59,9 +59,13 @@ SDK client. Don't break this boundary for convenience.
 
 - Vitest (`npx vitest run`, or no args for watch mode). Nuxt test environment configured in
   `vitest.config.ts` via `@nuxt/test-utils`.
-- Tests are written before implementation (TDD) — see `docs/06-scaffolding-plan.md`'s Test
-  Strategy section and `docs/04-test-scenario-inventory.md` for the full enumerated scenario list.
-  Test descriptions reference `TC-*` IDs from that doc where practical.
+- Tests are written before implementation (TDD), following **Red → Green → Refactor**:
+  1. **Red** — write a test for the behavior first and confirm it fails (the code it needs doesn't exist yet).
+  2. **Green** — write the minimum implementation needed to make that test pass.
+  3. **Refactor** — clean up the implementation (and/or the test) if needed, then re-run the test to confirm it still passes.
+  See `docs/06-scaffolding-plan.md`'s Test Strategy section and `docs/04-test-scenario-inventory.md`
+  for the full enumerated scenario list. Test descriptions reference `TC-*` IDs from that doc where
+  practical.
 - The Anthropic SDK client is mocked in all automated tests — no real API calls in the suite.
 - `store.ts`'s clock is injectable (`createStore({ now: () => someDate })`) — never read the
   system clock directly inside store logic; this keeps ordering-dependent tests deterministic.
@@ -71,7 +75,7 @@ SDK client. Don't break this boundary for convenience.
 ## Commands
 
 - `npm run dev` — start the dev server
-- `npx vitest run` — run the full test suite once
+- `npm test` — run the full test suite once
 - `npx vitest` — watch mode
 
 ## Status / known gaps

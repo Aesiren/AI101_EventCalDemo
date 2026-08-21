@@ -84,4 +84,20 @@ describe('useEvents', () => {
     expect(fetchMock).toHaveBeenCalledWith('/api/events/event-1')
     expect(result).toEqual(EVENT_A)
   })
+
+  it('setBaseSupport() PATCHes the flag and updates the matching event in state (US-1.12)', async () => {
+    const updated: Event = { ...EVENT_A, baseSupport: true }
+    const fetchMock = vi.fn().mockResolvedValue(updated)
+    const { events, setBaseSupport } = useEvents()
+    events.value = [EVENT_A, EVENT_B]
+
+    const result = await setBaseSupport('event-1', true, fetchMock as never)
+
+    expect(fetchMock).toHaveBeenCalledWith('/api/events/event-1/support', {
+      method: 'PATCH',
+      body: { baseSupport: true }
+    })
+    expect(result).toEqual(updated)
+    expect(events.value).toEqual([updated, EVENT_B])
+  })
 })

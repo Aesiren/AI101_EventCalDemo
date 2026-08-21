@@ -29,10 +29,22 @@ export function useEvents() {
     return fetcher<Event>(`/api/events/${id}`)
   }
 
+  // Leader-only (US-1.12) — the route itself enforces that; this just calls it and keeps the
+  // `events` list in sync so BaseSupportToggle's parent list re-renders without a full refresh().
+  async function setBaseSupport(id: string, baseSupport: boolean, fetcher: typeof $fetch = $fetch): Promise<Event> {
+    const updated = await fetcher<Event>(`/api/events/${id}/support`, {
+      method: 'PATCH',
+      body: { baseSupport }
+    })
+    events.value = events.value.map(e => (e.id === id ? updated : e))
+    return updated
+  }
+
   return {
     events,
     refresh,
     createEvent,
-    fetchEvent
+    fetchEvent,
+    setBaseSupport
   }
 }

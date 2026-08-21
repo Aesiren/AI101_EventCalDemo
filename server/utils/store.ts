@@ -33,6 +33,12 @@ export function createStore(options: StoreOptions = {}) {
     return accounts.map(a => ({ ...a }))
   }
 
+  function findAccountByName(name: string): Account | undefined {
+    const normalized = name.trim().toLowerCase()
+    const account = accounts.find(a => a.name.toLowerCase() === normalized)
+    return account ? { ...account } : undefined
+  }
+
   function listEvents(): Event[] {
     return events.map(e => ({ ...e }))
   }
@@ -98,6 +104,7 @@ export function createStore(options: StoreOptions = {}) {
 
   return {
     listAccounts,
+    findAccountByName,
     listEvents,
     createEvent,
     setBaseSupport,

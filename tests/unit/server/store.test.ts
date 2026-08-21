@@ -114,4 +114,26 @@ describe('store', () => {
     expect(storeA.listEvents()).toHaveLength(1)
     expect(storeB.listEvents()).toHaveLength(0)
   })
+
+  it('finds a seeded account by exact name (US-1.13 mock login)', () => {
+    const store = createStore()
+    const account = store.findAccountByName('Casey Rivera')
+    expect(account?.role).toBe('User')
+  })
+
+  it('matches account names case-insensitively', () => {
+    const store = createStore()
+    expect(store.findAccountByName('casey rivera')?.name).toBe('Casey Rivera')
+    expect(store.findAccountByName('MORGAN HAYES')?.name).toBe('Morgan Hayes')
+  })
+
+  it('trims surrounding whitespace before matching a name', () => {
+    const store = createStore()
+    expect(store.findAccountByName('  Casey Rivera  ')?.name).toBe('Casey Rivera')
+  })
+
+  it('returns undefined when no account matches the given name', () => {
+    const store = createStore()
+    expect(store.findAccountByName('Nobody Here')).toBeUndefined()
+  })
 })

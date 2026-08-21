@@ -3,6 +3,7 @@
 // the only callers, which keeps this (and everything downstream of it) server-only.
 
 import type { Account, Event, Interest, InterestKind, NewEventInput } from '../../shared/types'
+import { seedDemoData } from './seed'
 
 const DEFAULT_ACCOUNTS: Account[] = [
   { id: 'user-1', name: 'Casey Rivera', role: 'User' },
@@ -124,3 +125,7 @@ export type Store = ReturnType<typeof createStore>
 
 /** The single shared instance used by server/api routes. */
 export const store = createStore()
+
+// Demo fixture data — see seed.ts for what's seeded and why. Only ever applied to this
+// singleton, never to createStore() itself, so every test's "starts empty" assumption holds.
+seedDemoData(store)

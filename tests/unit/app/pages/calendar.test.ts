@@ -80,4 +80,34 @@ describe('calendar page', () => {
     expect(wrapper.find('[data-day="1"]').text()).toContain('First Day Event')
     expect(wrapper.find('[data-day="30"]').text()).toContain('Last Day Event')
   })
+
+  it('navigates to the next month (TC-3.1-04)', async () => {
+    mockEvents = ref([])
+    const wrapper = await mountSuspended(CalendarPage)
+    await wrapper.find('[data-action="next-month"]').trigger('click')
+    expect(wrapper.text()).toContain('October 2026')
+    expect(wrapper.findAll('[data-day]')).toHaveLength(31)
+  })
+
+  it('re-buckets events correctly after navigating to the next month (TC-3.1-04)', async () => {
+    const octoberEvent: Event = { ...EVENT_MID_MONTH, id: 'event-oct', name: 'October Idea', dateTime: '2026-10-03T09:00:00.000Z' }
+    mockEvents = ref([octoberEvent])
+    const wrapper = await mountSuspended(CalendarPage)
+    await wrapper.find('[data-action="next-month"]').trigger('click')
+    expect(wrapper.find('[data-day="3"]').text()).toContain('October Idea')
+  })
+
+  it('navigates to the previous month (TC-3.1-05)', async () => {
+    mockEvents = ref([])
+    const wrapper = await mountSuspended(CalendarPage)
+    await wrapper.find('[data-action="prev-month"]').trigger('click')
+    expect(wrapper.text()).toContain('August 2026')
+    expect(wrapper.findAll('[data-day]')).toHaveLength(31)
+  })
+
+  it('does not render a separate "today" panel (reverted — see 07-milestones.md)', async () => {
+    mockEvents = ref([])
+    const wrapper = await mountSuspended(CalendarPage)
+    expect(wrapper.find('[data-section="today-events"]').exists()).toBe(false)
+  })
 })

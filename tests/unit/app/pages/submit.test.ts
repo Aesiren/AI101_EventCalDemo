@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest'
-import { mountSuspended } from '@nuxt/test-utils/runtime'
+import { describe, expect, it, vi } from 'vitest'
+import { mockNuxtImport, mountSuspended } from '@nuxt/test-utils/runtime'
 import SubmitPage from '../../../../app/pages/submit.vue'
 import EventForm from '../../../../app/components/EventForm.vue'
 import AiAssistPanel from '../../../../app/components/AiAssistPanel.vue'
@@ -17,6 +17,12 @@ const CREATED: Event = {
   resourcesCommitted: false,
   createdAt: '2026-08-21T09:00:00.000Z'
 }
+
+// Mocking navigateTo rather than letting the real post-submit redirect run — see the note in
+// tests/unit/app/layouts/default.test.ts for why (an occasional "history is not defined"
+// unhandled rejection under happy-dom).
+const { navigateToMock } = vi.hoisted(() => ({ navigateToMock: vi.fn() }))
+mockNuxtImport('navigateTo', () => navigateToMock)
 
 describe('submit page', () => {
   it('defaults to the AI Assistant tab', async () => {
@@ -43,19 +49,21 @@ describe('submit page', () => {
     expect(wrapper.findComponent(EventForm).exists()).toBe(false)
   })
 
-  it('shows a confirmation message after EventForm emits "submitted"', async () => {
+  it('navigates to the calendar after EventForm emits "submitted" (Milestone 7)', async () => {
+    navigateToMock.mockClear()
     const wrapper = await mountSuspended(SubmitPage)
     await wrapper.find('button[data-tab="manual"]').trigger('click')
     await wrapper.vm.$nextTick()
     await wrapper.findComponent(EventForm).vm.$emit('submitted', CREATED)
     await wrapper.vm.$nextTick()
-    expect(wrapper.text()).toMatch(/submitted/i)
+    expect(navigateToMock).toHaveBeenCalledWith('/calendar')
   })
 
-  it('shows a confirmation message after AiAssistPanel emits "submitted"', async () => {
+  it('navigates to the calendar after AiAssistPanel emits "submitted" (Milestone 7)', async () => {
+    navigateToMock.mockClear()
     const wrapper = await mountSuspended(SubmitPage)
     await wrapper.findComponent(AiAssistPanel).vm.$emit('submitted', CREATED)
     await wrapper.vm.$nextTick()
-    expect(wrapper.text()).toMatch(/submitted/i)
+    expect(navigateToMock).toHaveBeenCalledWith('/calendar')
   })
 })

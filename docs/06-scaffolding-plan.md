@@ -20,15 +20,20 @@ Nuxt 4 changed the default project layout: `pages/`, `components/`, `composables
 ├── docs/                        (this planning chain, 00–06)
 ├── shared/
 │   ├── types.ts                 (Event, Account, Interest, GuidelineResult — the one place these shapes are defined; both client and server import from here)
-│   └── utils/                   pure helpers used by pages/components, none of them touching the network (US-3.1-3.3, Milestone 6)
-│       ├── groupEventsByDate.ts      month-grid grouping for calendar.vue
+│   └── utils/                   pure helpers used by pages/components, none of them touching the network (US-3.1-3.4, Milestone 6-7)
+│       ├── groupEventsByDate.ts      month-grid grouping for calendar.vue; also exports toDateKey()
+│       │                            (local-date formatting) and filterEventsOnDate() (Milestone 7 —
+│       │                            index.vue's Calendar-tile preview, and seed.ts's today-dated
+│       │                            event; NOT used by calendar.vue itself — see that page's note)
 │       ├── rankEventsByVotes.ts      vote-count ranking, ties broken by insertion order, for votes.vue
+│       │                            (index.vue's Top Voted tile also uses this, truncated to the
+│       │                            top two — Milestone 7; votes.vue itself is untruncated)
 │       └── filterNeedsVoting.ts      "hasn't voted/volunteered yet, excluding own events" filter for needs-voting.vue
 ├── app/
 │   ├── app.vue
 │   ├── app.config.ts             ui.colors.primary: 'blue' (Milestone 7 — Nuxt UI's default is green)
 │   ├── pages/
-│   │   ├── index.vue                 not logged in -> /login; logged in -> a dashboard of every navigable section, role-filtered (US-3.4)
+│   │   ├── index.vue                 not logged in -> /login; logged in -> a dashboard of every navigable section, role-filtered (US-3.4). Calendar/Top Voted tiles preview live data (today's events; top two voted) rather than a static description (Milestone 7)
 │   │   ├── login.vue                 US-1.13 — mock login
 │   │   ├── events/
 │   │   │   ├── index.vue              minimal list — name + vote count only (US-1.2, revised)

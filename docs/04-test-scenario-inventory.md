@@ -121,22 +121,23 @@ Validation covers presence only — no min/max length or character-format rules 
 - **TC-3.1-03** (edge) — Events on the first/last day of the month render in the correct cell (month-boundary handling).
 - **TC-3.1-04** (happy) — Navigating to the next month re-renders the grid for that month, with its own events on their correct days.
 - **TC-3.1-05** (happy) — Navigating to the previous month works the same way (symmetric reverse of TC-3.1-04).
-- **TC-3.1-06** (happy) — An event dated today appears in the "today" panel regardless of which month the grid is currently showing.
-- **TC-3.1-07** (edge) — No events today → the "today" panel shows an explicit empty state, not nothing.
 
-### US-3.2 — Chart view of top-voted events (extended, Milestone 7)
+### US-3.2 — Chart view of top-voted events
 - **TC-3.2-01** (happy) — Events display ranked by vote count, highest first.
 - **TC-3.2-02** (edge) — Two events tied on vote count render in insertion order (earlier-submitted event first).
-- **TC-3.2-03** (happy) — With more than two events, only the top two are rendered.
 
 ### US-3.3 — Needs-voting view
 - **TC-3.3-01** (happy) — Events the current User hasn't voted on are listed, newest first.
 - **TC-3.3-02** (edge) — User has voted on every event → empty-state message shown.
 
-### US-3.4 — Home page as a navigable dashboard
+### US-3.4 — Home page as a navigable dashboard (extended, Milestone 7)
 - **TC-3.4-01** (happy) — Logged-in User sees clickable entries for Events and Submit an Event.
 - **TC-3.4-02** (happy) — Logged-in Leader additionally sees a Leader Review entry.
 - **TC-3.4-03** (edge) — Logged-in User (non-Leader) does not see a Leader Review entry.
+- **TC-3.4-04** (happy) — An event dated today appears in the Calendar entry's preview.
+- **TC-3.4-05** (edge) — No events today → the Calendar entry shows an explicit empty state, not nothing.
+- **TC-3.4-06** (happy) — With more than two events, the Top Voted entry previews only the top two, ranked highest first.
+- **TC-3.4-07** (edge) — No events submitted yet → the Top Voted entry shows an explicit empty state, not nothing.
 
 ### US-3.5 — Consistent, modern styling
 - Not enumerated as automated TCs — see the note under US-3.5 in `03-acceptance-criteria.md`. The one objectively testable slice ("interactive controls are Nuxt UI components, not bare unstyled elements") is verified incidentally by existing component tests continuing to find the right elements after restyling, not by new dedicated test cases.

@@ -35,6 +35,8 @@
 // system" boundary from docs/05-spec.md's NFR intact). Vote counts come from
 // useEvents().fetchAllInterests() (Milestone 6's composed-from-existing-endpoints approach — see
 // its comment in useEvents.ts) rather than a new bulk endpoint.
+// Reverted from a Milestone 7 top-two truncation — that behavior was meant for a home-screen
+// preview widget, not this full page. See docs/07-milestones.md.
 import { computed } from 'vue'
 import { useEvents } from '../composables/useEvents'
 import { rankEventsByVotes } from '../../shared/utils/rankEventsByVotes'

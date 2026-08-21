@@ -39,6 +39,7 @@ app/
                  already (Milestone 2); don't let it regress. Wrapped in <UApp> (Nuxt UI's
                  top-level provider — toasts/tooltips/etc.) — only one <UApp> should ever exist;
                  it does not also belong in app/layouts/default.vue.
+  app.config.ts    ui.colors.primary: 'blue' (Milestone 7 — Nuxt UI defaults to green)
   assets/css/main.css   `@import "tailwindcss"; @import "@nuxt/ui";` plus the `.app-select`
                  utility class (see components note below). Registered via `css` in
                  nuxt.config.ts.
@@ -46,15 +47,26 @@ app/
     index.vue         not logged in -> /login; logged in -> a Nuxt UI dashboard (UCard tiles) of
                        every navigable section, role-filtered (US-3.4, built Milestone 5). Nuxt's
                        file-based routing makes this the page that loads at `/`, so it can never
-                       be the event list.
+                       be the event list. The Calendar and Top Voted tiles preview live data —
+                       today's event(s) (data-section="calendar-preview") and the top two voted
+                       events (data-section="top-voted-preview") — instead of a static description
+                       (Milestone 7; see the mid-milestone correction note in
+                       docs/07-milestones.md for why this lives here and not on calendar.vue/
+                       votes.vue themselves).
     login.vue         US-1.13 — dropdown-only login (no free-text name entry)
     events/
       index.vue        minimal list — name + vote count only (US-1.2, revised, built Milestone 5)
       [id].vue         full fields + submitter + vote/volunteer controls (US-1.14, US-2.1-2.3)
-    submit.vue        US-1.3–US-1.9 (Milestone 3+)
+    submit.vue        US-1.3–US-1.9 (Milestone 3+). On 'submitted', navigates straight to
+                       /calendar (Milestone 7) rather than showing an inline confirmation on the
+                       page you're leaving — the calendar itself is the confirmation now.
     leader.vue        US-1.11, US-1.12
-    calendar.vue       month grid (US-3.1, built Milestone 6) — public, no login needed
-    votes.vue          chart view, hand-rolled bars (US-3.2, built Milestone 6) — public
+    calendar.vue       month grid, navigable via prev/next-month buttons (US-3.1, built Milestone
+                       6, extended Milestone 7) — public, no login needed. No "today" panel here —
+                       that preview lives on index.vue's dashboard tile instead (see above).
+    votes.vue          chart view, hand-rolled bars, full ranked list (US-3.2, built Milestone 6)
+                       — public. Not truncated — the top-two preview lives on index.vue's
+                       dashboard tile instead (see above).
     needs-voting.vue   events the viewer hasn't voted/volunteered on (US-3.3, built Milestone 6)
                        — gated by 'require-login' middleware, since it's meaningless logged out
   components/    EventCard, EventForm, AiAssistPanel, BaseSupportToggle, ResourcesCommittedToggle, VoteControls, VoteCount
@@ -78,13 +90,21 @@ server/
 shared/
   types.ts             Event, Account, Interest, GuidelineResult — the one place these shapes are defined
   eventValidation.ts   presence validation, used by both the server route and EventForm.vue
-  utils/               pure helpers, none touching the network (US-3.1-3.3, built Milestone 6):
-    groupEventsByDate.ts   month-grid grouping for calendar.vue — takes `referenceDate` as a
-                           parameter rather than reading the system clock itself (same reasoning
-                           as store.ts's injectable clock); calendar.vue is the one place that
-                           actually reads `new Date()`, and tests control it via Vitest fake timers
-    rankEventsByVotes.ts   vote-count ranking for votes.vue; relies on Array.sort's ES2019+
-                           stability to break ties by insertion order, no extra logic needed
+  utils/               pure helpers, none touching the network (US-3.1-3.4, built Milestone 6-7):
+    groupEventsByDate.ts   month-grid grouping, used by calendar.vue; also exports toDateKey()
+                           (local-date formatting, no UTC conversion) and filterEventsOnDate()
+                           (Milestone 7 — index.vue's Calendar-tile preview, and seed.ts's
+                           today-dated event; calendar.vue itself no longer uses either, after the
+                           mid-milestone correction — see docs/07-milestones.md). All take their
+                           Date as a parameter rather than reading the system clock internally
+                           (same reasoning as store.ts's injectable clock); calendar.vue and
+                           index.vue are the two places that actually read `new Date()`, and tests
+                           control it via Vitest fake timers
+    rankEventsByVotes.ts   vote-count ranking, used by votes.vue (full list) and index.vue's Top
+                           Voted tile (sliced to the top two, Milestone 7); relies on
+                           Array.sort's ES2019+ stability to break ties by insertion order, no
+                           extra logic needed — the tie-break guarantee holds either way, sliced
+                           or not, since ranking happens before any truncation
     filterNeedsVoting.ts   "hasn't voted/volunteered yet" filter for needs-voting.vue — also
                            excludes the viewer's own submitted events (self-voting is blocked
                            everywhere else) and treats volunteering as satisfying "has voted",
@@ -140,12 +160,29 @@ SDK client. Don't break this boundary for convenience.
 
 ## Status / known gaps
 
-- **Milestones 1–6 complete** — Phase 1, Phase 2, UI Consistency & Navigation, and Phase 3
-  (Beautification — calendar, chart, needs-voting) are all built and verified (191/191 tests,
-  typecheck clean). A new **Milestone 7 — Cleanup** is documented in `docs/07-milestones.md` but
-  not yet built as of this writing: primary color → blue, calendar month navigation + a "today"
-  panel, redirect to `/calendar` after submitting, chart truncated to the top two, and more varied
-  seed data.
+- **All 7 milestones complete** — Phase 1, Phase 2, UI Consistency & Navigation, Phase 3
+  (Beautification), and Cleanup are all built and verified (204/204 tests, typecheck clean). See
+  `docs/07-milestones.md`.
+- **The "today's events" and "top two voted" previews live on `index.vue`'s dashboard tiles, not
+  on `calendar.vue`/`votes.vue` themselves** — those two pages were briefly changed that way
+  during Milestone 7, then reverted once you clarified the intended placement. `calendar.vue` is
+  just the navigable month grid (no separate panel); `votes.vue` shows the full ranked list (no
+  truncation) under its original "Top Voted Events" title. Don't reintroduce either behavior on
+  those pages without checking with the user first — see the "Mid-milestone correction" note in
+  `docs/07-milestones.md` for the full story.
+- **Seed data** (`server/utils/seed.ts`) now uses all three accounts as voters/volunteers,
+  including `leader-1` (previously never used for interests) — vote totals range 0–2 across seven
+  events, including a deliberate 2-vote tie (Community Cookout / Movie Night Under the Stars) so
+  the Top Voted dashboard tile's top-two truncation has a real tie to break, not just a test
+  fixture one. One event (Coffee & Concerns with Leadership) is dated on the real current date via
+  `toDateKey(new Date())` — not a fixed string, unlike every other seeded event — specifically so
+  the Calendar dashboard tile's preview always has something to show in a fresh `npm run dev`.
+- **Nuxt Icon cold-cache warning, not a bug**: the very first live request to a page using an icon
+  not yet fetched by the local `/api/_nuxt_icon` endpoint can log `[Icon] failed to load icon
+  ...` and a hydration-mismatch warning alongside it (seen once on `calendar.vue`'s
+  prev/next-month chevron icons). A second request to the same page comes back clean. Don't chase
+  this as a real bug if it resurfaces — it's a one-time warm-up artifact of that endpoint, not a
+  wrong icon name or a lasting issue.
 - **Volunteering counts as a vote, not an alternative to one** (US-2.3, revised after Milestone 5
   at your request) — `store.ts`'s `getVoteCount()` counts Interest records of kind `'vote'` *or*
   `'volunteer'`. The `kind` field still distinguishes the two for "already voted"/"already

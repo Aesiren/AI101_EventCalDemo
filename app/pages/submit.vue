@@ -29,8 +29,6 @@
 
     <AiAssistPanel v-if="mode === 'assist'" @submitted="handleSubmitted" />
     <EventForm v-else @submitted="handleSubmitted" />
-
-    <UAlert v-if="justSubmitted" class="mt-4" color="success" variant="soft" role="status" title="Event submitted — thank you!" />
   </main>
 </template>
 
@@ -42,12 +40,14 @@
 // panel on switch, rather than leaving stale state sitting around in a hidden component.
 // Restyled with Nuxt UI (Milestone 5) — the tab toggle is two UButtons rather than bare
 // <button>s, but keeps its data-tab attributes so existing tests are unaffected.
+// Milestone 7: on submit, navigate straight to /calendar instead of showing an inline "thank
+// you" message on the page you're about to leave — the calendar now doubles as the confirmation,
+// since the just-created event shows up there.
 import type { Event } from '../../shared/types'
 
 const mode = ref<'assist' | 'manual'>('assist')
-const justSubmitted = ref(false)
 
 function handleSubmitted(_event: Event) {
-  justSubmitted.value = true
+  navigateTo('/calendar')
 }
 </script>

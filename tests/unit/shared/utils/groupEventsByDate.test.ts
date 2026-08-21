@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { groupEventsByDate } from '../../../../shared/utils/groupEventsByDate'
+import { groupEventsByDate, filterEventsOnDate, toDateKey } from '../../../../shared/utils/groupEventsByDate'
 import type { Event } from '../../../../shared/types'
 
 function makeEvent(overrides: Partial<Event> = {}): Event {
@@ -55,5 +55,31 @@ describe('groupEventsByDate', () => {
     const octoberEvent = makeEvent({ id: 'event-oct', dateTime: '2026-10-01T09:00:00.000Z' })
     const days = groupEventsByDate([augustEvent, octoberEvent], SEPTEMBER_2026)
     expect(days.every(d => d.events.length === 0)).toBe(true)
+  })
+})
+
+// Both used by calendar.vue's "today" panel (US-3.1, Milestone 7) — a separate concern from the
+// navigable month grid above, since "today" stays fixed regardless of which month is being viewed.
+describe('toDateKey', () => {
+  it('formats a Date as YYYY-MM-DD using local date components', () => {
+    expect(toDateKey(new Date(2026, 8, 5))).toBe('2026-09-05') // month is 0-indexed
+  })
+
+  it('pads single-digit months and days', () => {
+    expect(toDateKey(new Date(2026, 0, 1))).toBe('2026-01-01')
+  })
+})
+
+describe('filterEventsOnDate', () => {
+  it('returns events landing on the given date (TC-3.1-06)', () => {
+    const onDate = makeEvent({ id: 'event-on', dateTime: '2026-09-15T18:00:00.000Z' })
+    const otherDate = makeEvent({ id: 'event-other', dateTime: '2026-09-16T18:00:00.000Z' })
+    const result = filterEventsOnDate([onDate, otherDate], SEPTEMBER_2026)
+    expect(result).toEqual([onDate])
+  })
+
+  it('returns an empty array when nothing lands on the given date (TC-3.1-07)', () => {
+    const event = makeEvent({ dateTime: '2026-09-16T18:00:00.000Z' })
+    expect(filterEventsOnDate([event], SEPTEMBER_2026)).toEqual([])
   })
 })

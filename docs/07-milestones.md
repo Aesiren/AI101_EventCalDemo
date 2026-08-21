@@ -159,12 +159,12 @@ what "no new server contracts" meant in practice, and a few small additions beyo
 - Calendar/Votes are public reads in the header nav (viewable logged out, same as Events); Needs
   Voting only appears once logged in, same as Submit Event.
 
-## Milestone 7 — Cleanup
+## Milestone 7 — Cleanup — done
 
 Six small fixes requested after Milestone 6 shipped — not new product features, so most don't get
 new story/AC/TC entries (see the Milestone 7 note in [02-user-stories.md](./02-user-stories.md)).
-Two are real behavior changes against existing stories and do have full AC/TC coverage: US-3.1
-(FR-10) and US-3.2 (FR-11) — see [03-acceptance-criteria.md](./03-acceptance-criteria.md) and
+One is a real behavior change against an existing story with full AC/TC coverage: US-3.1 (FR-10)
+— see [03-acceptance-criteria.md](./03-acceptance-criteria.md) and
 [04-test-scenario-inventory.md](./04-test-scenario-inventory.md).
 
 1. **Highlight color → blue.** Add `app/app.config.ts` with `ui.colors.primary: 'blue'` (Nuxt UI
@@ -183,24 +183,53 @@ Two are real behavior changes against existing stories and do have full AC/TC co
    event, not a message on the page you're leaving. Update `submit.test.ts` to assert
    `navigateTo('/calendar')` was called (mocked, per the standing `navigateTo` pattern in
    `CLAUDE.md`) instead of checking for inline confirmation text.
-4. **Chart view shows the top two (US-3.2, TC-3.2-03).** `votes.vue` slices `ranked.value` to its
-   first two entries before rendering. `rankEventsByVotes` itself is unchanged — it still ranks
-   every event; only the page-level render is truncated, so the tie-break-by-insertion-order
-   guarantee still applies to *which* two end up on top (see Confirmed clarification #5 in
-   `03-acceptance-criteria.md`).
-5. **Calendar "today" panel (US-3.1, TC-3.1-06/07).** A small section on `calendar.vue`, separate
-   from the navigable month grid, listing events whose date matches the real current date —
-   computed independently of `referenceDate` so browsing to a different month never hides it. Empty
+4. **Top Voted dashboard tile shows the top two (US-3.4, TC-3.4-06/07).** `index.vue`'s Top Voted
+   tile previews `rankEventsByVotes(events, voteCounts).slice(0, 2)` instead of its static
+   description. `rankEventsByVotes` itself is unchanged — it still ranks every event; only the
+   tile-level render is truncated, so the tie-break-by-insertion-order guarantee still applies to
+   *which* two end up on top (see Confirmed clarification #5 in `03-acceptance-criteria.md`).
+5. **Calendar dashboard tile shows today's events (US-3.4, TC-3.4-04/05).** `index.vue`'s Calendar
+   tile previews `filterEventsOnDate(events, new Date())` instead of its static description. Empty
    state ("No events today.") when there are none, same pattern as every other empty-state message
    in the app.
 6. **More seed-data variety, no new accounts.** Extend `server/utils/seed.ts`: use all three
    existing seeded accounts (`user-1`, `user-2`, and — not currently used for interests —
    `leader-1`) as voters/volunteers across more events, so vote totals actually differ from each
    other instead of clustering at 0/1. Add 1–2 more events for volume, and seed one event dated on
-   the real current date (`new Date()`, not a fixed string) specifically so step 5's "today" panel
-   has something to show in a fresh `npm run dev`. Not unit-tested — `seedDemoData()` is only ever
-   applied to the singleton `store`, never to `createStore()` test instances (see `store.ts`'s own
-   comment on this), so there's nothing here for Vitest to assert against.
+   the real current date (`new Date()`, not a fixed string) specifically so step 5's Calendar tile
+   preview has something to show in a fresh `npm run dev`. Not unit-tested — `seedDemoData()` is
+   only ever applied to the singleton `store`, never to `createStore()` test instances (see
+   `store.ts`'s own comment on this), so there's nothing here for Vitest to assert against.
+
+**Mid-milestone correction.** Items 4 and 5 were initially built onto the full `/votes` and
+`/calendar` pages instead — a `UCard` "today" panel added to `calendar.vue`, and `votes.vue`
+sliced to two entries — reading "Top Voted component"/"Calendar component" in the original request
+as referring to those pages. You clarified you meant the home dashboard's Calendar and Top Voted
+*tiles* (US-3.4) — a live preview on the tile itself, not a change to the destination pages. Both
+were reverted (`votes.vue` back to its full ranked list and original "Top Voted Events" title,
+`calendar.vue` back to just the navigable grid with no separate panel — its month navigation from
+step 2 was correctly scoped from the start and stayed) and rebuilt on `index.vue` instead, each
+with its own test-first pass. Steps 4/5 above and the AC/TC entries throughout this doc chain
+reflect the corrected, final placement — not the original misplaced one.
+
+**Done.** All 6 items built on their corrected targets (204/204 tests passing, `npx nuxi
+typecheck` clean, live dev-server smoke test confirmed the color, `/calendar`'s month navigation
+with no stray "today" panel, and `/votes`'s full untruncated list with its original title — the
+home-dashboard tiles themselves can't be curl-verified logged-out, per the standing session
+limitation, but their own component tests cover the preview/empty-state behavior directly). Two
+additions beyond the step list, both small:
+
+- `shared/utils/groupEventsByDate.ts` gained `toDateKey(date)` (local-date-component formatting,
+  refactored out of `groupEventsByDate` itself) and `filterEventsOnDate(events, date)` — both
+  test-first, both used by `index.vue`'s Calendar-tile preview and reused by `seed.ts` to build the
+  today-dated event's `dateTime` without any risk of a UTC/local date-boundary mismatch (see that
+  function's own comment). Note this means `calendar.vue` itself no longer imports either — only
+  `groupEventsByDate` — since the "today" concern moved to `index.vue`.
+- A one-time icon gotcha, not a lasting issue: `calendar.vue`'s first live request logged `[Icon]
+  failed to load icon lucide:chevron-left/-right` — a cold-cache warm-up artifact of the Nuxt Icon
+  module's local `/api/_nuxt_icon` endpoint, not a broken icon name or a real bug. A second request
+  to the same page came back clean with no warnings. Not worth chasing further; noted here in case
+  it resurfaces and looks alarming.
 
 ## Traceability
 

@@ -1,7 +1,12 @@
 <template>
   <main>
     <h1 class="text-2xl font-bold mb-1">Calendar</h1>
-    <p class="text-muted mb-6">{{ monthLabel }}</p>
+
+    <div class="flex items-center justify-between mb-6">
+      <UButton data-action="prev-month" variant="soft" color="neutral" icon="i-lucide-chevron-left" @click="goToPreviousMonth" />
+      <p class="text-lg font-semibold">{{ monthLabel }}</p>
+      <UButton data-action="next-month" variant="soft" color="neutral" icon="i-lucide-chevron-right" trailing @click="goToNextMonth" />
+    </div>
 
     <div class="grid grid-cols-7 gap-2">
       <div v-for="weekday in WEEKDAYS" :key="weekday" class="text-center text-xs font-semibold text-muted uppercase">
@@ -32,12 +37,12 @@
 </template>
 
 <script setup lang="ts">
-// Calendar view (US-3.1, FR-10) — a month grid using the pure groupEventsByDate helper.
-// `referenceDate` is read once from the system clock here (the one place in the app allowed to —
-// everywhere else that needs "now" takes it as a parameter, same as store.ts's injectable clock);
-// tests control it via Vitest's fake timers instead. Purely additive read over existing event
-// data — no new server contract (Milestone 6).
-import { computed } from 'vue'
+// Calendar view (US-3.1, FR-10) — a month grid using the pure groupEventsByDate helper, navigable
+// month-to-month (Milestone 7, TC-3.1-04/05). Purely additive read over existing event data — no
+// new server contract (Milestone 6). Previously also had a "today" panel here (Milestone 7); that
+// was reverted — it was meant for a home-screen preview widget, not this full page. See
+// docs/07-milestones.md.
+import { computed, ref } from 'vue'
 import { useEvents } from '../composables/useEvents'
 import { groupEventsByDate } from '../../shared/utils/groupEventsByDate'
 
@@ -46,8 +51,22 @@ const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const { events, refresh } = useEvents()
 await refresh()
 
-const referenceDate = new Date()
-const days = computed(() => groupEventsByDate(events.value, referenceDate))
-const leadingBlanks = computed(() => new Date(referenceDate.getFullYear(), referenceDate.getMonth(), 1).getDay())
-const monthLabel = computed(() => referenceDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }))
+// The one real read of the system clock in this page — the grid starts on the current month but
+// is then navigable independently via goToPreviousMonth/goToNextMonth.
+const today = new Date()
+const referenceDate = ref(new Date(today.getFullYear(), today.getMonth(), 1))
+
+const days = computed(() => groupEventsByDate(events.value, referenceDate.value))
+const leadingBlanks = computed(() => new Date(referenceDate.value.getFullYear(), referenceDate.value.getMonth(), 1).getDay())
+const monthLabel = computed(() => referenceDate.value.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }))
+
+function goToPreviousMonth() {
+  const d = referenceDate.value
+  referenceDate.value = new Date(d.getFullYear(), d.getMonth() - 1, 1)
+}
+
+function goToNextMonth() {
+  const d = referenceDate.value
+  referenceDate.value = new Date(d.getFullYear(), d.getMonth() + 1, 1)
+}
 </script>

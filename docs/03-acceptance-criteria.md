@@ -116,22 +116,25 @@ Each block maps 1:1 to a story ID for traceability.
 - Given events exist with dates in the displayed month, when the User opens the calendar view, then each event appears on its correct date.
 - Given a day has no events, when the calendar view renders, then that day displays empty without error.
 - Given the User is viewing the calendar, when they navigate to the next or previous month, then the grid updates to that month's days, correctly showing events that fall within it.
-- Given events exist on the current real-world date, when the User views the calendar — in any month, not just the current one — then those events are also shown in a dedicated "today" panel that doesn't depend on which month the grid is currently displaying.
 
-### US-3.2 — Chart view of top-voted events (extended, Milestone 7)
+### US-3.2 — Chart view of top-voted events
 
-- Given multiple events have vote counts, when the User opens the chart view, then only the top two, ranked by vote count highest first, are displayed — not the full list.
+- Given multiple events have vote counts, when the User opens the chart view, then events are displayed ranked by vote count, highest first.
 
 ### US-3.3 — Needs-voting view
 
 - Given event ideas exist that the current logged-in User has not yet voted or volunteered on, when they open the needs-voting view, then only those events are listed, newest first, excluding the User's own submitted events (they can never vote on those — see Confirmed clarifications below).
 - Given the User has voted on every existing event they're able to vote on, when they open the needs-voting view, then an empty-state message is shown.
 
-### US-3.4 — Home page as a navigable dashboard
+### US-3.4 — Home page as a navigable dashboard (extended, Milestone 7)
 
 - Given the home page renders for a logged-in User, when it loads, then it shows a clickable entry point to every currently-navigable section (Events, Submit an Event).
 - Given the home page renders for a logged-in Leader, when it loads, then it additionally shows a clickable entry point to Leader Review.
 - Given the home page renders for a logged-in User (not a Leader), when it loads, then no Leader Review entry point is shown.
+- Given events exist on the current real-world date, when the home page renders, then the Calendar entry previews those events (not just its static description) — regardless of which events exist in other months.
+- Given no events exist on the current real-world date, when the home page renders, then the Calendar entry shows an explicit "no events today" state rather than an empty or misleading preview.
+- Given multiple events have vote counts, when the home page renders, then the Top Voted entry previews the top two, ranked by vote count highest first — the same ranking/tie-break rule as the full chart view (US-3.2), just truncated to two for the tile.
+- Given no events have been submitted yet, when the home page renders, then the Top Voted entry shows an explicit empty state rather than nothing.
 
 ### US-3.5 — Consistent, modern styling
 
@@ -146,6 +149,6 @@ Prior open judgment calls, now resolved and reflected in the AC above:
 2. **US-3.3 "needs voting"** — confirmed as "events the current logged-in User has not yet voted on," not "events with zero votes total."
 3. **Base support default** — confirmed: every new event starts with Base support = false regardless of submission path; only a Leader account can set it to true.
 4. **US-3.3 scope, resolved during Milestone 6 implementation**: "hasn't voted on" excludes a User's own submitted events (self-voting is blocked everywhere else in the app — surfacing an event here the User can never act on would be a dead end, not a to-do) and treats volunteering the same as voting (consistent with US-2.3's revision: volunteering is a stronger form of support, not an alternative to a vote, so it also satisfies "has weighed in").
-5. **US-3.2 "top two", Milestone 7** — the existing tie-break rule (insertion order) still applies before truncating: events are ranked in full first, then the top two of that ranking are shown, so a tie sitting right at the #2/#3 boundary still resolves the same deterministic way it always did.
+5. **US-3.4's "top two" preview, Milestone 7** (moved here after an initial mid-milestone placement on the full US-3.2 chart view — see the note in `02-user-stories.md`) — the existing tie-break rule (insertion order) still applies before truncating: events are ranked in full first, then the top two of that ranking are shown in the home tile, so a tie sitting right at the #2/#3 boundary still resolves the same deterministic way it always did. The full chart view (US-3.2) shows every ranked event, untruncated.
 
 No open items remain blocking Step 5.

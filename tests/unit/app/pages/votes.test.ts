@@ -68,6 +68,26 @@ describe('votes (chart) page', () => {
     expect(names[1]).toContain('Low Interest Idea')
   })
 
+  it('renders every ranked event, not just a top slice (reverted — see 07-milestones.md)', async () => {
+    const first = makeEvent({ id: 'event-1st', name: 'First Place' })
+    const second = makeEvent({ id: 'event-2nd', name: 'Second Place' })
+    const third = makeEvent({ id: 'event-3rd', name: 'Third Place' })
+    mockEvents = ref([first, second, third])
+    fetchAllInterestsMock.mockResolvedValue({
+      'event-1st': { voteCount: 5, myInterest: null },
+      'event-2nd': { voteCount: 3, myInterest: null },
+      'event-3rd': { voteCount: 1, myInterest: null }
+    })
+    const wrapper = await mountSuspended(VotesPage)
+    const ranks = wrapper.findAll('[data-rank]')
+    expect(ranks).toHaveLength(3)
+    expect(ranks.map(r => r.text())).toEqual([
+      expect.stringContaining('First Place'),
+      expect.stringContaining('Second Place'),
+      expect.stringContaining('Third Place')
+    ])
+  })
+
   it('breaks ties by insertion order (TC-3.2-02)', async () => {
     const earlier = makeEvent({ id: 'event-earlier', name: 'Earlier Idea', createdAt: '2026-08-01T09:00:00.000Z' })
     const later = makeEvent({ id: 'event-later', name: 'Later Idea', createdAt: '2026-08-02T09:00:00.000Z' })

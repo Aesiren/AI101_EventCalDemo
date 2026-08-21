@@ -58,6 +58,12 @@ export interface NewEventInput {
   submittedBy: string
 }
 
+// The request body for POST /api/events — everything in NewEventInput except submittedBy, which
+// the server derives from the login cookie rather than trusting the client to supply it (a
+// client-supplied submittedBy would let anyone submit "as" someone else, undermining the
+// self-vote-block invariant in store.ts).
+export type CreateEventInput = Omit<NewEventInput, 'submittedBy'>
+
 export type InterestKind = 'vote' | 'volunteer'
 
 // One record per (accountId, eventId) pair — this is what makes "one vote per user per event"

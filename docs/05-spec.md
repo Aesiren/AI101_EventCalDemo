@@ -49,6 +49,8 @@ Only the two "irreparable" rows bypass the correction path; every other conflict
 
 **Response priority (agent.ts), confirmed during manual testing:** rejected > correctable > missing fields > ready to submit. A guideline conflict — whether outright rejection or a correctable one — is always surfaced before asking for any still-missing fields (location, date/time, etc.). The reasoning: a user facing a content problem should see it immediately, rather than being asked to fill in logistics for an idea they might decide not to bother revising at all.
 
+**Bug fix, found via manual testing (see `07-milestones.md`'s Bug Fix section for the full account):** the deterministic check (`guidelines.ts`'s `evaluate()`) scans the current turn's raw user input in addition to the model's re-extracted `name`/`description` fields — not the full conversation history (that would break the "revise → clears the flag" behavior in US-1.7). This closes a real gap where arguing with the agent, in the user's own words, could produce a "clean" turn even though nothing about the event actually changed. The keyword lists themselves were also expanded (missing synonyms like "underage"/"minor"/"champagne") and a word-boundary matching bug fixed (multi-word phrases like "high school" now also catch inflected forms like "high schoolers") — a keyword list is inherently non-exhaustive, so this raises the bar rather than claiming to close the category for good.
+
 ## Data model (sketch — entities and relationships, not code)
 
 **Account**

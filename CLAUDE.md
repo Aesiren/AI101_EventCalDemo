@@ -160,9 +160,26 @@ SDK client. Don't break this boundary for convenience.
 
 ## Status / known gaps
 
-- **All 7 milestones complete** — Phase 1, Phase 2, UI Consistency & Navigation, Phase 3
-  (Beautification), and Cleanup are all built and verified (204/204 tests, typecheck clean). See
-  `docs/07-milestones.md`.
+- **All 7 milestones complete**, plus one post-milestone bug fix — Phase 1, Phase 2, UI
+  Consistency & Navigation, Phase 3 (Beautification), Cleanup, and a guideline-enforcement bypass
+  fix are all built and verified (215/215 tests, typecheck clean). See `docs/07-milestones.md`.
+- **Guideline enforcement bug, found via manual testing (US-1.10/FR-4) — fixed.** An under-21 +
+  alcohol event correctly got flagged as correctable, but arguing with the agent ("no, I need
+  alcohol at this event, let me continue") — not a real revision — was then allowed through.
+  Root cause: `guidelines.ts`'s keyword lists had real gaps (missing "underage"/"minor"
+  (singular)/"under 18"; a `\bphrase\b` regex that didn't match inflected multi-word phrases like
+  "high schoolers"), AND `evaluate()` only ever saw the current turn's re-extracted
+  `name`/`description`, never the user's own literal words. Fixed: expanded the term lists, fixed
+  the regex to tolerate inflection on multi-word phrases only (not single words — avoids new
+  over-matching risk), and `evaluate()` now also scans the current turn's raw `userInput`
+  (`ContentDraft.rawUserInput`) via `agent.ts`. **Deliberately did NOT add bare "drink"/"drinks"**
+  — it broke the existing "Energy Drink Tent" brand-promotion test; keep the specific-enough
+  "drinking"/"drunk" forms instead if you're ever tempted to add it back. **Deliberately scoped
+  rawUserInput scanning to the current turn only, not the full conversation history** — scanning
+  history was the original plan, but it breaks `TC-1.7-05` (a genuine revision no longer clears
+  the flag, since the old flagged phrase never leaves the transcript). A regression-guard test in
+  `agent.test.ts` locks this scope in. A keyword list is inherently non-exhaustive — this raises
+  the bar, it isn't a claim the category is closed for good.
 - **The "today's events" and "top two voted" previews live on `index.vue`'s dashboard tiles, not
   on `calendar.vue`/`votes.vue` themselves** — those two pages were briefly changed that way
   during Milestone 7, then reverted once you clarified the intended placement. `calendar.vue` is

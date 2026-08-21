@@ -16,22 +16,55 @@ import type { GuidelineResult } from '../../shared/types'
 export interface ContentDraft {
   name?: string
   description?: string
+  /**
+   * The user's own literal text for the current turn (not the full conversation history — see
+   * agent.ts's comment on why only the current turn, not history, is scanned here). Fixes a real
+   * incident: the model's field extraction can fail to carry violating content into
+   * name/description on a given turn (e.g. under adversarial pushback), even though the user's
+   * own message plainly states it. Deliberately scoped to the current turn only — scanning the
+   * full history would also re-flag content from an earlier turn the user has since genuinely
+   * revised away, breaking the "revise → clears the flag" behavior (TC-1.7-05).
+   */
+  rawUserInput?: string
 }
 
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
+// Multi-word phrases get a trailing `\w*` so a plausible inflection of the last word still
+// matches (e.g. "high school" also catches "high schoolers") — found as a real gap: the exact
+// phrase "high school students" correctly triggered the under-21 rule, but "high schoolers",
+// describing the identical event, silently didn't. Single-word terms deliberately do NOT get this
+// treatment — it stays a plain `\bterm\b` match, so short/common words can't over-match into
+// unrelated words (this is what keeps "bar" from false-positiving inside "barbecue", per the
+// existing convention here).
 function containsAny(text: string, phrases: string[]): boolean {
-  return phrases.some(phrase => new RegExp(`\\b${escapeRegExp(phrase)}\\b`, 'i').test(text))
+  return phrases.some(phrase => {
+    const isMultiWord = /\s/.test(phrase)
+    const pattern = `\\b${escapeRegExp(phrase)}${isMultiWord ? '\\w*' : ''}\\b`
+    return new RegExp(pattern, 'i').test(text)
+  })
 }
 
+// Term lists below were expanded after a real incident: "under age"/"underage"/"under 18"/"minor"
+// (vs. only "under 21"/"minors"), and a few common slang/spirit names ("booze", "champagne",
+// "vodka", "whiskey", "tequila", "rum", "gin", "shot glass") were all previously absent, letting
+// plainly-violating content through undetected. A keyword list is never exhaustive — this raises
+// the bar, it doesn't claim to close the category.
+//
+// Deliberately NOT added: bare "drink"/"drinks" — tried it, but it collides with ordinary
+// non-alcohol content ("Energy Drink Tent", "soft drink", "drink station"), which is worse than
+// the narrower gap it would have closed. "drinking"/"drunk" (verb/adjective forms that don't
+// double as common nouns for other beverages) stay.
 const ALCOHOL_TERMS = [
-  'alcohol', 'beer', 'wine', 'liquor', 'cocktail', 'drinking',
-  'open bar', 'full bar', 'bar crawl', 'beer pong', 'brewery', 'winery'
+  'alcohol', 'alcoholic', 'beer', 'beers', 'wine', 'liquor', 'cocktail', 'cocktails',
+  'drinking', 'drunk', 'booze', 'champagne', 'vodka', 'whiskey', 'tequila', 'rum', 'gin',
+  'open bar', 'full bar', 'bar crawl', 'beer pong', 'brewery', 'winery', 'shot glass'
 ]
 const UNDER_21_TERMS = [
-  'under 21', 'under-21', 'youth', 'teen', 'teens', 'teenager', 'high school', 'middle school', 'minors'
+  'under 21', 'under-21', 'under 18', 'under-18', 'under age', 'underage',
+  'youth', 'teen', 'teens', 'teenager', 'minor', 'minors', 'high school', 'middle school'
 ]
 const DRUG_TERMS = [
   'marijuana', 'weed', 'cannabis', 'cocaine', 'heroin', 'meth', 'narcotics', 'lsd', 'ecstasy', 'mdma', 'drugs'
@@ -47,7 +80,7 @@ const EXPLICIT_TERMS = [
 ]
 
 export function evaluate(draft: ContentDraft): GuidelineResult {
-  const text = `${draft.name ?? ''} ${draft.description ?? ''}`
+  const text = `${draft.name ?? ''} ${draft.description ?? ''} ${draft.rawUserInput ?? ''}`
 
   const hasAlcohol = containsAny(text, ALCOHOL_TERMS)
   const hasUnder21 = containsAny(text, UNDER_21_TERMS)

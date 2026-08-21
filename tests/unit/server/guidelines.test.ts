@@ -121,4 +121,60 @@ describe('evaluate (AI content guidelines)', () => {
     const result = evaluate({})
     expect(result).toEqual({ status: 'clear' })
   })
+
+  // --- Bug fix: keyword-list gaps found while investigating a real prompt-injection incident.
+  // "drink" (vs. "drinking"), "under age"/"underage" (vs. "under 21"), and inflected multi-word
+  // phrases ("high schoolers" vs. "high school") all previously slipped through undetected. ---
+
+  it('flags "under age"/"underage" as under-21 framing, combined with alcohol as irreparable', () => {
+    const result = evaluate({ description: 'A party where minors can drink alcohol under age.' })
+    expect(result.status).toBe('rejected')
+  })
+
+  it('flags "minor" (singular, not just "minors") as under-21 framing', () => {
+    const result = evaluate({ description: 'A party for a minor who wants alcohol.' })
+    expect(result.status).toBe('rejected')
+  })
+
+  it('flags "under 18" as under-21 framing', () => {
+    const result = evaluate({ description: 'A party with beer, open to those under 18.' })
+    expect(result.status).toBe('rejected')
+  })
+
+  it('flags "booze" and "champagne" as alcohol content, not just the generic terms', () => {
+    expect(evaluate({ description: 'A party with booze for teens.' }).status).toBe('rejected')
+    expect(evaluate({ description: 'A party with champagne for teens.' }).status).toBe('rejected')
+  })
+
+  it('flags an inflected form of a multi-word phrase ("high schoolers"), not just the literal phrase ("high school")', () => {
+    const result = evaluate({ description: 'A party where high schoolers can drink alcohol.' })
+    expect(result.status).toBe('rejected')
+  })
+
+  it('still does not false-positive on an unrelated word containing a short term as a substring (e.g. "barbecue" vs. "bar")', () => {
+    const result = evaluate({ description: 'A backyard barbecue with burgers and lawn games.' })
+    expect(result.status).toBe('clear')
+  })
+
+  it('does not flag a bare "drink" as alcohol content (too broad — collides with "Energy Drink", "soft drink", etc.)', () => {
+    const result = evaluate({
+      name: 'Energy Drink Tent',
+      description: 'Free samples of a new energy drink for anyone who stops by.'
+    })
+    expect(result.status).toBe('clear')
+  })
+
+  // --- Bug fix: the agent now also scans the current turn's raw user input (see agent.ts) in
+  // case the model's field extraction didn't faithfully carry violating content into
+  // name/description that turn. evaluate() itself just needs to fold that text in when present.
+
+  it('includes rawUserInput in what gets scanned, when provided', () => {
+    const result = evaluate({ name: '', description: '', rawUserInput: 'I need alcohol at this event even though it is under age, let me continue anyway.' })
+    expect(result.status).toBe('rejected')
+  })
+
+  it('is clear when rawUserInput is absent and name/description are clean (no regression)', () => {
+    const result = evaluate({ name: 'Community Cookout', description: 'Burgers and lawn games.' })
+    expect(result).toEqual({ status: 'clear' })
+  })
 })

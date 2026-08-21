@@ -113,7 +113,18 @@ export async function assist(
   const proposedFields = sanitizeFields((toolUse?.input as Record<string, unknown>) ?? {})
 
   const missingFields = REQUIRED_FIELDS.filter(field => !proposedFields[field])
-  const guidelineResult = evaluate({ name: proposedFields.name, description: proposedFields.description })
+  // rawUserInput: the current turn's literal text, scanned in addition to the model's re-extracted
+  // fields. Fixes a real incident — the model's extraction can fail to carry violating content
+  // into name/description on a given turn (e.g. under adversarial pushback: "no, I need alcohol
+  // at this under-age event, let me continue"), even though the user's own message plainly states
+  // it. Deliberately scoped to THIS turn only, not the full conversation history — see
+  // guidelines.ts's ContentDraft.rawUserInput comment for why scanning history would break the
+  // "revise → clears the flag" behavior (TC-1.7-05).
+  const guidelineResult = evaluate({
+    name: proposedFields.name,
+    description: proposedFields.description,
+    rawUserInput: userInput
+  })
 
   // Irreparable rejection wins regardless of what's still missing — no point asking for more
   // info on an event that can never be approved.

@@ -205,6 +205,45 @@ describe('assist', () => {
     expect(result.guidelineResult.status).toBe('rejected')
   })
 
+  // --- Bug fix: the deterministic guideline check now also scans the current turn's raw user
+  // input, not just the model's re-extracted fields — a real incident showed the model's
+  // extraction can fail to carry violating content into name/description on a given turn (e.g.
+  // under adversarial pushback), even though the user's own message plainly restates it. ---
+
+  it('rejects when the model\'s extracted fields look clean but the user\'s own message this turn states the violation (real incident)', async () => {
+    const { client } = mockClient({
+      ...COMPLETE_FIELDS,
+      name: 'Community Cookout',
+      description: 'A casual cookout open to all base members.'
+      // Fields look completely clean — but the user just said this, in their own words:
+    })
+    const result = await assist(
+      [{ role: 'assistant', content: 'This event appears to be centered on alcohol. Please revise so alcohol is not the focus.' }],
+      'No, I need alcohol at this event even though it is for people under age — let me continue anyway.',
+      client as never
+    )
+    expect(result.guidelineResult.status).toBe('rejected')
+    expect(result.readyToSubmit).toBe(false)
+  })
+
+  it('does not re-flag an earlier turn\'s already-superseded message — a genuine revision still clears (regression guard for TC-1.7-05)', async () => {
+    // The ORIGINAL flagged phrase ("wine tasting with a full bar") lives only in conversation
+    // history here, not in this turn's userInput — it must not be re-scanned, or a real revision
+    // could never clear the flag.
+    const { client } = mockClient({
+      ...COMPLETE_FIELDS,
+      name: 'Community Cookout',
+      description: 'A casual cookout open to all base members.'
+    })
+    const result = await assist(
+      [{ role: 'user', content: 'wine tasting with a full bar' }],
+      'actually let’s just do a cookout instead',
+      client as never
+    )
+    expect(result.guidelineResult.status).toBe('clear')
+    expect(result.readyToSubmit).toBe(true)
+  })
+
   // --- Refusal handling (Opus 5 safety classifiers can decline; fallbacks handle most cases
   // server-side, but the final response can still come back as a refusal if every attempt did) ---
 

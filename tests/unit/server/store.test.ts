@@ -118,18 +118,26 @@ describe('store', () => {
     expect(interests[0]?.kind).toBe('vote')
   })
 
-  it('counts votes for an event, ignoring volunteers (US-2.4)', () => {
+  it('counts votes for an event (US-2.4)', () => {
     const store = createStore()
     const event = store.createEvent(baseInput({ submittedBy: 'user-1' }))
     store.castInterest('user-2', event.id, 'vote')
     expect(store.getVoteCount(event.id)).toBe(1)
   })
 
-  it('does not count a volunteer as a vote', () => {
+  it('counts a volunteer toward the vote total too — volunteering also counts as a vote, not an alternative to one', () => {
     const store = createStore()
     const event = store.createEvent(baseInput({ submittedBy: 'user-1' }))
     store.castInterest('user-2', event.id, 'volunteer')
-    expect(store.getVoteCount(event.id)).toBe(0)
+    expect(store.getVoteCount(event.id)).toBe(1)
+  })
+
+  it('counts votes and volunteers together in the same total', () => {
+    const store = createStore()
+    const event = store.createEvent(baseInput({ submittedBy: 'user-1' }))
+    store.castInterest('user-2', event.id, 'vote')
+    store.castInterest('leader-1', event.id, 'volunteer')
+    expect(store.getVoteCount(event.id)).toBe(2)
   })
 
   it('returns 0 votes for an event nobody has voted on', () => {

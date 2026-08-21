@@ -94,13 +94,15 @@ Validation covers presence only — no min/max length or character-format rules 
 - **TC-2.2-01** (error) — Second vote attempt by the same user on the same event → no-op, count unchanged.
 - **TC-2.2-02** (edge) — UI reflects "already voted" state after the first vote, rather than an active vote control.
 
-### US-2.3 — Volunteer instead of vote
+### US-2.3 — Volunteer as a stronger form of support (revised)
 - **TC-2.3-01** (happy) — User marks themselves a volunteer → recorded as such.
-- **TC-2.3-02** (edge) — User who already voted switches to volunteer → vote is removed (count −1), volunteer status recorded.
-- **TC-2.3-03** (edge) — User who is a volunteer instead switches to voting to participate → volunteer status removed, vote recorded (symmetric reverse of TC-2.3-02).
+- **TC-2.3-02** (edge) — User who already voted switches to volunteer → recorded interest becomes volunteer status; count is unchanged (was already counted as a vote, still is).
+- **TC-2.3-03** (edge) — User who is a volunteer instead switches to plain voting → volunteer status replaced by vote status; count is unchanged (symmetric reverse of TC-2.3-02).
+- **TC-2.3-04** (happy) — Volunteering (without ever having plain-voted) still counts toward the vote total — see the note in `02-user-stories.md`.
 
 ### US-2.4 — Leader sees vote totals
 - **TC-2.4-01** (happy) — Displayed vote total matches the actual recorded vote count.
+- **TC-2.4-02** (happy) — Displayed vote total includes both plain votes and volunteers, summed together.
 
 ### US-2.5 — Leader sees Resources Committed flag
 - **TC-2.5-01** (happy) — Flag true → shown as committed.

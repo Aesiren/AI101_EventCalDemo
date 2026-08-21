@@ -109,7 +109,11 @@ export function createStore(options: StoreOptions = {}) {
   }
 
   function getVoteCount(eventId: string): number {
-    return interests.filter(i => i.eventId === eventId && i.kind === 'vote').length
+    // Volunteering also counts as a vote — it's not an alternative to voting, just a stronger
+    // form of it (US-2.3). The `kind` field still distinguishes the two for "already voted" UI
+    // state (getMyInterest) and the Leader-only volunteer roster (getVolunteers); only the tally
+    // treats them the same.
+    return interests.filter(i => i.eventId === eventId && (i.kind === 'vote' || i.kind === 'volunteer')).length
   }
 
   function getMyInterest(accountId: string, eventId: string): InterestKind | null {

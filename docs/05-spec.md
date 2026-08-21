@@ -22,7 +22,7 @@ Requirement statements below are the "what must exist" summary; the *testable* d
 
 ### Phase 2
 - **FR-7** Voting — one vote per user per event; self-voting blocked. *(US-2.1, US-2.2)*
-- **FR-8** Volunteering — mutually exclusive with voting, per user per event. *(US-2.3)*
+- **FR-8** Volunteering — one recorded interest per user per event (still can't be recorded as both a plain voter and a volunteer at once), but volunteering counts toward the vote total the same as a plain vote — it's a stronger form of support, not an alternative to one. *(US-2.3, revised)*
 - **FR-9** Leader decision inputs — vote totals visible per event, and a Resources Committed flag visible and Leader-toggleable per event (mirrors Base support). *(US-2.4, US-2.5, US-2.6)*
 
 ### Phase 3
@@ -64,8 +64,8 @@ Only the two "irreparable" rows bypass the correction path; every other conflict
 
 **Interest** *(Phase 2 — one record per Account/Event pair)*
 - accountId, eventId, kind (`vote` or `volunteer`)
-- Uniqueness: at most one Interest record per (account, event) pair — this single-record design is what naturally enforces both "one vote per user per event" (US-2.2) and "voting/volunteering are mutually exclusive" (US-2.3): switching kind replaces the record rather than adding a second one.
-- Vote count for an event = count of Interest records for that event where kind = `vote`.
+- Uniqueness: at most one Interest record per (account, event) pair — this single-record design is what naturally enforces "one vote per user per event" (US-2.2) and keeps a User from being recorded as both a plain voter and a volunteer at once (US-2.3): switching kind replaces the record rather than adding a second one.
+- Vote count for an event = count of Interest records for that event where kind = `vote` **or** kind = `volunteer` *(US-2.3, revised — volunteering counts toward the total the same as a plain vote, since it's a stronger form of support, not an alternative to one)*.
 
 ## Non-functional requirements
 

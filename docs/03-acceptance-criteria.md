@@ -89,14 +89,14 @@ Each block maps 1:1 to a story ID for traceability.
 - Given a User has already voted on an event, when they attempt to vote on it again, then the action is a no-op and the vote count does not change.
 - Given a User has already voted on an event, when they view it, then the UI shows they've already voted rather than offering an active vote action.
 
-### US-2.3 — Volunteer instead of vote
+### US-2.3 — Volunteer as a stronger form of support (revised — see 02-user-stories.md)
 
-- Given a User is viewing an event, when they choose to volunteer, then they are recorded as a volunteer for that event.
-- Given a User has previously voted to participate, when they instead choose to volunteer, then their participant vote is removed and replaced by volunteer status (the two are mutually exclusive per event, per user).
+- Given a User is viewing an event, when they choose to volunteer, then they are recorded as a volunteer for that event, **and** the event's vote count includes them — volunteering is not an alternative to voting, it counts as one.
+- Given a User has previously voted to participate, when they instead choose to volunteer, then their recorded interest becomes volunteer status (still one record per event per user — a User can't be recorded as both a plain voter and a volunteer at once), and the vote count is unaffected by the switch, since both kinds count toward it.
 
 ### US-2.4 — Leader sees vote totals
 
-- Given an event has received votes, when a Leader views it, then the total vote count is displayed with the event.
+- Given an event has received votes and/or volunteers, when a Leader views it, then the total vote count — counting both — is displayed with the event.
 
 ### US-2.5 — Leader sees Resources Committed flag
 

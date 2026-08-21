@@ -59,6 +59,15 @@ SDK client. Don't break this boundary for convenience.
 
 - Vitest (`npx vitest run`, or no args for watch mode). Nuxt test environment configured in
   `vitest.config.ts` via `@nuxt/test-utils`.
+- Component tests use `mountSuspended` from `@nuxt/test-utils/runtime`, which needs
+  `@vue/test-utils` (installed as a dev dependency — it's an optional peer of `@nuxt/test-utils`,
+  not pulled in automatically).
+- Composables that call `$fetch` (or other Nuxt auto-imports like `navigateTo`) take an
+  **injectable dependency** with a real default, rather than relying on Nuxt's auto-import mocking
+  — `vi.stubGlobal('$fetch', ...)` does not reliably intercept it (see
+  github.com/nuxt/test-utils/issues/291). Pattern: `login(name, fetcher = $fetch)`, tests pass a
+  mock fetcher directly. Follow this pattern for new composables/middleware rather than fighting
+  Nuxt's auto-import mocking.
 - Tests are written before implementation (TDD), following **Red → Green → Refactor**:
   1. **Red** — write a test for the behavior first and confirm it fails (the code it needs doesn't exist yet).
   2. **Green** — write the minimum implementation needed to make that test pass.

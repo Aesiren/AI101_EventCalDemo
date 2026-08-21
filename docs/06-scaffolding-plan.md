@@ -109,7 +109,7 @@ Sequenced so each milestone is a working, demoable state — not just "Phase 1/2
 
 ## CLAUDE.md
 
-Not written yet — it gets created at the start of Milestone 1 (once there's actual code to describe), and should record: this folder structure, the "AI/guidelines never leave `server/`" boundary, the test strategy above, and a pointer back to [05-spec.md](./05-spec.md) as the source of truth for behavior. Keeping it thin and pointing at the docs chain avoids duplicating content that would drift out of sync.
+Not written yet — it gets created at the **end** of Milestone 1, once the skeleton (folder structure, store, types) actually exists to describe, and should record: this folder structure, the "AI/guidelines never leave `server/`" boundary, the test strategy above, and a pointer back to [05-spec.md](./05-spec.md) as the source of truth for behavior. Keeping it thin and pointing at the docs chain avoids duplicating content that would drift out of sync.
 
 ## Traceability chain
 

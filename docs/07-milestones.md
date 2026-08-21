@@ -4,7 +4,7 @@ Status: expands the Build Order in [06-scaffolding-plan.md](./06-scaffolding-pla
 
 ## Milestone 1 — Skeleton
 
-No UI. Done when store unit tests pass and `npm run dev` boots an empty app without errors.
+No UI. Done when store unit tests pass, `npm run dev` boots an empty app without errors, and `CLAUDE.md` exists.
 
 1. `npx nuxi init` — scaffold the Nuxt 4 project, TypeScript template.
 2. Install and pin test tooling explicitly, together, in one install: `@nuxt/test-utils@^4`, `vitest@^4`, `happy-dom@^20.0.11`.
@@ -15,9 +15,11 @@ No UI. Done when store unit tests pass and `npm run dev` boots an empty app with
    - `listEvents()` / `listAccounts()` return seeded data.
    - `createEvent()` defaults `baseSupport: false`, stamps `createdAt` from an injectable clock (not `Date.now()` directly).
    - `setBaseSupport()` flips the flag.
+   - `setResourcesCommitted()` flips the flag, mirroring `setBaseSupport()` (US-2.6) — TDD'd now for the same reason as `castInterest()` below, since its contract was already fixed once the Resources Committed decision cascaded through doc 06.
    - `castInterest()` — one record per (account, event) pair, self-voting blocked, switching `kind` replaces rather than duplicates. *(These are Phase 2 rules, TDD'd now since the contract is already fixed — Milestone 4 becomes wiring, not new logic.)*
 7. Implement `store.ts` against those failing tests until green.
 8. Seed mock accounts — a small fixed list of User/Leader accounts for the mock-login flow (US-1.13).
+9. Write `CLAUDE.md` — now that the skeleton exists to describe: this folder structure, the "AI/guidelines never leave `server/`" boundary, the test strategy (Vitest, mocked SDK, injectable clock), and a pointer to [05-spec.md](./05-spec.md) as the source of truth.
 
 ## Milestone 2 — Core CRUD, no AI
 

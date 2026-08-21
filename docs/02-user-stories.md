@@ -8,7 +8,8 @@ IDs are stable references for AC and later test-scenario traceability — don't 
 ### Viewing events
 
 - **US-1.1** — As a User, I want to view a list of all submitted events, so that I can see what's already been proposed.
-- **US-1.2** — As a User, I want each event in the list to show its name, location, type, description, date/time, and Base support status, so that I have full context without drilling into a detail view.
+- **US-1.2** — *(Revised — see note below)* As a User, I want each event in the list to show just its name and total vote count, so that I can quickly scan what's popular without the list being cluttered by full details.
+- **US-1.14** — As a User, I want an event's own page to show all of its details (location, type, description, date/time, Base support) and who submitted it, so that the list can stay minimal while full information is still one click away.
 
 ### Manual submission
 
@@ -47,8 +48,12 @@ IDs are stable references for AC and later test-scenario traceability — don't 
 - **US-3.1** — As a User, I want a calendar view showing upcoming events for the month, so that I can see what's happening at a glance instead of scanning a flat list.
 - **US-3.2** — As a Leader or User, I want a chart view of the top-voted events, so that I can quickly see which ideas have the most community support.
 - **US-3.3** — As a User, I want a view listing the newest event ideas that haven't been voted on yet, so that I can find things to vote on without hunting through the full list.
+- **US-3.4** — As a User or Leader, I want the home page to show every section of the app as something I can click straight to, so that I don't have to already know the site's structure to get around.
+- **US-3.5** — As a User or Leader, I want the app to look modern and consistent from page to page, so that it feels like one coherent product rather than a set of disconnected screens.
 
 ## Notes
 
 - The AI Agent is a system actor, not a persona — its behavior appears in stories from the User's or Leader's point of view (what they get out of it), not as its own "As an AI Agent..." stories.
 - Phase 1 stories are the demo-complete bar. Phase 2/3 stories are written now so scaffolding doesn't have to be reworked to fit them later, per the cross-phase design constraint in [00-idea-capture.md](./00-idea-capture.md).
+- **US-1.2 revision note**: the original version of this story ("show all six fields in the list") was reversed after Milestones 1–4 were already built and tested against it. That behavior didn't disappear — it moved to **US-1.14**, the event's own page. The revision is deliberate, not a correction of a mistake: showing full detail per list item was fine for a demo with a handful of seeded events, but doesn't scale as a pattern, and a minimal-list/full-detail split is the more standard shape for this kind of UI. See `docs/04-test-scenario-inventory.md` for how the existing TC-1.2-01/02/03 tests (already referenced by file/line in `EventCard.test.ts`) were reassigned to US-1.14 without renumbering them, to avoid unnecessary churn on passing tests.
+- **US-3.4/US-3.5 are cross-cutting UI work**, not new product features — they were assigned Phase 3 IDs because they fit the existing "Beautification" theme, but they're scheduled to build *before* the Phase-3 calendar/chart/needs-voting stories (US-3.1–3.3) in the milestone build order — see `docs/07-milestones.md` Milestone 5 vs. 6. Phase numbering (product grouping) and Milestone numbering (build order) are allowed to diverge like this; they're two different axes.

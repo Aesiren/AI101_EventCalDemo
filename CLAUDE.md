@@ -37,13 +37,13 @@ app/
                  instead, which silently makes every pages/ route unreachable. Caught once
                  already (Milestone 2); don't let it regress.
   pages/
-    index.vue         home/redirect gate ONLY — not logged in -> /login, else -> /events.
-                       Nuxt's file-based routing makes this the page that loads at `/`, so it
-                       can never be the event list itself.
+    index.vue         not logged in -> /login; logged in -> a dashboard of every navigable
+                       section, role-filtered (US-3.4, Milestone 5). Nuxt's file-based routing
+                       makes this the page that loads at `/`, so it can never be the event list.
     login.vue         US-1.13 — dropdown-only login (no free-text name entry)
     events/
-      index.vue        the actual event list (US-1.1, US-1.2) — the app's real "home"
-      [id].vue         individual event detail page
+      index.vue        minimal list — name + vote count only (US-1.2, revised, Milestone 5)
+      [id].vue         full fields + submitter + vote/volunteer controls (US-1.14, US-2.1-2.3)
     submit.vue        US-1.3–US-1.9 (Milestone 3+)
     leader.vue        US-1.11, US-1.12 (Milestone 2, in progress)
   components/    EventCard, EventForm, AiAssistPanel, BaseSupportToggle, ResourcesCommittedToggle, VoteControls
@@ -115,8 +115,13 @@ SDK client. Don't break this boundary for convenience.
 
 ## Status / known gaps
 
-- Milestones 1–4 complete — **Phase 1 and Phase 2 both done.** Milestone 5 (Phase 3 —
-  Beautification) is next — see `docs/07-milestones.md` for the current step list.
+- Milestones 1–4 complete — **Phase 1 and Phase 2 both done.** A new **Milestone 5 — UI
+  Consistency & Navigation** was inserted ahead of the original Phase 3 work (now Milestone 6) —
+  see `docs/07-milestones.md` for the current step list. Styling library: **Nuxt UI** (v4+, on
+  Tailwind CSS 4) — not yet installed as of this writing.
+- **US-1.2 was revised** (see `docs/02-user-stories.md`): the event list shows only name + vote
+  count now, not all six fields — that moved to the event's own page (US-1.14, already built).
+  `app/pages/events/index.vue` itself hasn't been updated to match yet — that's Milestone 5 step 3.
 - Vote/interest data (`voteCount`, `myInterest`) is deliberately kept off the `Event` type itself
   — it's viewer-specific and derived, not intrinsic. Fetched separately via
   `GET /api/events/:id/interest` (`useEvents().fetchInterest()`), consumed by `VoteControls.vue`

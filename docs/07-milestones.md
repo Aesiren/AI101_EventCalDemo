@@ -71,7 +71,45 @@ Covers US-2.1–2.5 (FR-7, FR-8, FR-9). Mostly wiring, since `castInterest`'s ru
 7. `app/components/ResourcesCommittedToggle.vue` — Leader-only control, not rendered/available for User-role accounts; component test then implement.
 8. Add the toggle to `app/pages/leader.vue` alongside the Base support toggle (US-2.5, US-2.6 / TC-2.5-01/02).
 
-## Milestone 5 — Phase 3 (Beautification)
+## Milestone 5 — UI Consistency & Navigation
+
+Covers US-1.2 (revised), US-3.4, US-3.5 (FR-1, FR-1b, FR-13, FR-14). Inserted ahead of the
+original Phase 3 milestone (now Milestone 6) at your request — cross-cutting UI work, not new
+product features, so it's scheduled before the calendar/chart/needs-voting build even though its
+story IDs live under the Phase 3 "Beautification" theme (see the note in
+[02-user-stories.md](./02-user-stories.md)).
+
+**Already done, not part of this milestone's step list:** the "voting buttons and event details
+on the detail page" half of the request — `app/pages/events/[id].vue` already hosts `EventCard`
+(full fields), the resolved submitter name, and `VoteControls` (US-1.14). That was built in a
+prior session as an ad-hoc addition once its need became apparent. What's left is removing that
+same content from the *list* page and doing the actual styling work.
+
+1. Install and configure `@nuxt/ui` (v4+) — add the module to `nuxt.config.ts`; it brings its
+   Tailwind CSS 4 dependency along.
+2. Restyle `app/layouts/default.vue` (the site header/nav) with Nuxt UI components — this
+   establishes the shared visual baseline every other page inherits.
+3. Simplify `app/pages/events/index.vue` to a minimal list — each item shows only the event's
+   name (linked to its detail page) and its `VoteCount` (reused component, already shows a
+   read-only total); remove `EventCard`/`VoteControls` from the list entirely. Restyle with Nuxt
+   UI list/card components. (US-1.2 revised, TC-1.2-04/05/06 — update
+   `tests/unit/app/pages/events/index.test.ts` first, since its assertions currently expect full
+   `EventCard` content on the list.)
+4. Redesign `app/pages/index.vue` as a Nuxt UI dashboard — a card/tile per navigable section
+   (Events, Submit an Event, and Leader Review when the account is a Leader), replacing the
+   current plain-text welcome links. (US-3.4, TC-3.4-01/02/03.)
+5. Restyle `app/pages/login.vue` and `app/pages/submit.vue` (its tab toggle, `EventForm.vue`,
+   `AiAssistPanel.vue`) with Nuxt UI form/tab/button components.
+6. Restyle `app/pages/events/[id].vue` (`EventCard.vue`, `VoteControls.vue`) and
+   `app/pages/leader.vue` (`BaseSupportToggle.vue`, `ResourcesCommittedToggle.vue`,
+   `VoteCount.vue`) with Nuxt UI components.
+7. Full verification: the existing test suite must keep passing — restyling shouldn't change the
+   `data-action`/`name`/`data-tab` attributes tests already rely on; where markup genuinely
+   changes shape, update that test first, same TDD discipline as everywhere else. Follow with a
+   live visual pass across every page (US-3.5) — this AC is inherently more qualitative than most
+   in this project; see the note under US-3.5 in `03-acceptance-criteria.md`.
+
+## Milestone 6 — Phase 3 (Beautification)
 
 Covers US-3.1–3.3 (FR-10, FR-11, FR-12). Purely additive reads over existing data — no new server contracts expected.
 
@@ -81,7 +119,8 @@ Covers US-3.1–3.3 (FR-10, FR-11, FR-12). Purely additive reads over existing d
 4. `app/pages/votes.vue` — chart view using that helper (US-3.2 / TC-3.2-01).
 5. Write a pure, testable filter for "events the current user hasn't voted on yet, newest first" — test first, then implement.
 6. `app/pages/needs-voting.vue` — using that filter, including the empty state when the user has voted on everything (TC-3.3-02).
-7. Wire navigation between all views (`events`, `leader`, `calendar`, `votes`, `needs-voting`).
+7. Wire navigation between all views (`events`, `leader`, `calendar`, `votes`, `needs-voting`) — this includes adding each new page to the Milestone-5 dashboard (`app/pages/index.vue`) and header nav (`app/layouts/default.vue`), not just cross-links between the new pages themselves.
+8. New pages should follow the Nuxt UI styling established in Milestone 5 from the start, rather than being restyled after the fact.
 
 ## Traceability
 

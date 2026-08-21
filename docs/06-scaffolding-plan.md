@@ -4,7 +4,7 @@ Status: final planning doc, derived from [05-spec.md](./05-spec.md). No implemen
 
 ## Stack (locked in)
 
-Nuxt 4 (currently 4.5.x — Nuxt 3 reached end-of-life July 31, 2026, so a new project starts on 4) + TypeScript + Vitest + Anthropic TypeScript SDK (server-side only) + in-memory store. Rationale is recorded in this conversation; not repeated here.
+Nuxt 4 (currently 4.5.x — Nuxt 3 reached end-of-life July 31, 2026, so a new project starts on 4) + TypeScript + Vitest + Anthropic TypeScript SDK (server-side only) + in-memory store + **Nuxt UI** (v4+, styling — see [05-spec.md](./05-spec.md)'s NFR). Rationale is recorded in this conversation; not repeated here.
 
 Nuxt 4 changed the default project layout: `pages/`, `components/`, `composables/`, and `middleware/` now live under a top-level `app/` directory (code that runs in the browser), while `server/` and `shared/` stay at root (server code and code shared between both). The tree below uses that Nuxt 4 default — not the old Nuxt 3 flat layout.
 
@@ -23,11 +23,11 @@ Nuxt 4 changed the default project layout: `pages/`, `components/`, `composables
 ├── app/
 │   ├── app.vue
 │   ├── pages/
-│   │   ├── index.vue                 home/redirect gate — not logged in -> /login, else -> /events (no content of its own)
+│   │   ├── index.vue                 not logged in -> /login; logged in -> a dashboard of every navigable section, role-filtered (US-3.4)
 │   │   ├── login.vue                 US-1.13 — mock login
 │   │   ├── events/
-│   │   │   ├── index.vue              US-1.1, US-1.2 — event list (the actual "home" of the app)
-│   │   │   └── [id].vue               individual event detail page
+│   │   │   ├── index.vue              minimal list — name + vote count only (US-1.2, revised)
+│   │   │   └── [id].vue               full fields + submitter + vote/volunteer controls (US-1.14, US-2.1-2.3)
 │   │   ├── submit.vue                US-1.3–US-1.9 — manual + AI-assisted submission
 │   │   ├── leader.vue                US-1.11, US-1.12 (+ US-2.4, US-2.5 in Phase 2)
 │   │   ├── calendar.vue              US-3.1 (Phase 3)

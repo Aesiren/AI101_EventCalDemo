@@ -9,10 +9,11 @@ IDs: `TC-<story ID>-<sequence>`. Tags: **happy** (normal path), **edge** (bounda
 - **TC-1.1-01** (happy) — List renders all events when one or more exist.
 - **TC-1.1-02** (edge) — Empty-state message shown when zero events exist.
 
-### US-1.2 — Event list shows all fields
-- **TC-1.2-01** (happy) — All six fields (name, location, type, description, date/time, Base support) render for an event with Base support = true.
-- **TC-1.2-02** (happy) — Same, for Base support = false.
-- **TC-1.2-03** (edge) — True/false Base support states are visually distinguishable from one another (not just absence vs. presence of a label).
+### US-1.2 — Event list shows only name and vote count (revised)
+- **TC-1.2-01/02/03 reassigned to US-1.14** — these three originally validated all-six-fields rendering on the *list*; that behavior now lives on the detail page instead. Kept under their original IDs (not renumbered) since `EventCard.test.ts` already references them by number — see the note in `02-user-stories.md`.
+- **TC-1.2-04** (happy) — List renders the event's name, linked to its detail page.
+- **TC-1.2-05** (happy) — List renders the event's total vote count.
+- **TC-1.2-06** (edge) — List does not render location, type, description, date/time, or Base support for any event.
 
 ### US-1.3 — Manual entry, all fields
 - **TC-1.3-01** (happy) — Valid submission with all fields filled (including date/time) creates an event and it appears in the list.
@@ -77,6 +78,12 @@ Validation covers presence only — no min/max length or character-format rules 
 - **TC-1.13-03** (error) — Logged in as User, attempt a Leader-only action → unavailable/blocked.
 - **TC-1.13-04** (edge) — No one logged in → prompted to log in before any role-specific action.
 
+### US-1.14 — Event detail page shows all fields and the submitter
+- **TC-1.2-01** (happy) — All six fields render for an event with Base support = true. *(reassigned from US-1.2, see above)*
+- **TC-1.2-02** (happy) — Same, for Base support = false. *(reassigned from US-1.2)*
+- **TC-1.2-03** (edge) — True/false Base support states are visually distinguishable from one another. *(reassigned from US-1.2)*
+- **TC-1.14-04** (happy) — Detail page shows "Submitted by [name]", resolved from the account id to a display name.
+
 ## Phase 2 — Democracy
 
 ### US-2.1 — Vote on an event
@@ -118,6 +125,14 @@ Validation covers presence only — no min/max length or character-format rules 
 ### US-3.3 — Needs-voting view
 - **TC-3.3-01** (happy) — Events the current User hasn't voted on are listed, newest first.
 - **TC-3.3-02** (edge) — User has voted on every event → empty-state message shown.
+
+### US-3.4 — Home page as a navigable dashboard
+- **TC-3.4-01** (happy) — Logged-in User sees clickable entries for Events and Submit an Event.
+- **TC-3.4-02** (happy) — Logged-in Leader additionally sees a Leader Review entry.
+- **TC-3.4-03** (edge) — Logged-in User (non-Leader) does not see a Leader Review entry.
+
+### US-3.5 — Consistent, modern styling
+- Not enumerated as automated TCs — see the note under US-3.5 in `03-acceptance-criteria.md`. The one objectively testable slice ("interactive controls are Nuxt UI components, not bare unstyled elements") is verified incidentally by existing component tests continuing to find the right elements after restyling, not by new dedicated test cases.
 
 ## Open items — resolved
 

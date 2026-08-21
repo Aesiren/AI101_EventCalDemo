@@ -12,7 +12,8 @@ The original Phase 1 field list had no event date/time, but Phase 2 (US-2.5) nee
 Requirement statements below are the "what must exist" summary; the *testable* detail lives in [03-acceptance-criteria.md](./03-acceptance-criteria.md) and [04-test-scenario-inventory.md](./04-test-scenario-inventory.md), referenced by story ID.
 
 ### Phase 1
-- **FR-1** Event list — view all submitted events with all fields visible. *(US-1.1, US-1.2)*
+- **FR-1** Event list — view all submitted events, each showing only its name (linked) and total vote count. *(US-1.1, US-1.2 — revised, see the note in [02-user-stories.md](./02-user-stories.md))*
+- **FR-1b** Event detail page — full fields (location, type, description, date/time, Base support) plus who submitted it, resolved to a display name. *(US-1.14)*
 - **FR-2** Manual submission — enter an event by filling in all fields directly, with presence validation. *(US-1.3, US-1.4)*
 - **FR-3** AI-assisted submission — free-text input → structured fields, with follow-up questions for anything undeterminable (asked together, not one at a time), guideline checking, a correction path for correctable violations, and outright rejection for irreparable ones. *(US-1.5–US-1.9)*
 - **FR-4** Prompt-injection resistance — guideline enforcement holds against adversarial input; the agent doesn't disclose its instructions. *(US-1.10)*
@@ -28,6 +29,8 @@ Requirement statements below are the "what must exist" summary; the *testable* d
 - **FR-10** Calendar view — events shown on their date. *(US-3.1)*
 - **FR-11** Chart view — events ranked by vote count, ties broken by insertion order. *(US-3.2)*
 - **FR-12** Needs-voting view — events the current user hasn't voted on, newest first. *(US-3.3)*
+- **FR-13** Home dashboard — every currently-navigable page section shown as a clickable entry, filtered by role (Leader Review only for Leaders). *(US-3.4)*
+- **FR-14** Consistent styling — one component library/visual language used across every page. *(US-3.5)*
 
 ## AI Agent guideline policy (authoritative)
 
@@ -71,6 +74,7 @@ Only the two "irreparable" rows bypass the correction path; every other conflict
 - **AI security posture** — guideline enforcement should be reasonably resistant to prompt injection for demonstration purposes ([US-1.10](./03-acceptance-criteria.md)); this is not a claim of production-grade robustness.
 - **Performance/scale** — none specified; assume small, single-session demo data volumes.
 - **Timezones/recurrence** — explicitly out of scope (see below); a single implicit timezone and non-recurring events are assumed throughout, including the calendar view.
+- **Styling** — [Nuxt UI](https://ui.nuxt.com) (v4+, built on Tailwind CSS 4 + Reka UI), chosen for tight Nuxt integration and because its free tier now includes dashboard-layout components (formerly a paid "Pro" feature) that fit US-3.4 directly. No other component library or hand-rolled design system should be introduced alongside it — one system, applied consistently, is the whole point of US-3.5.
 
 ## Definition of Done (per story)
 

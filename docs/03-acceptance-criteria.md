@@ -10,11 +10,10 @@ Each block maps 1:1 to a story ID for traceability.
 - Given at least one event has been submitted, when the User loads the event list, then all submitted events are displayed.
 - Given no events have been submitted, when the User loads the event list, then an explicit empty-state message is shown (not a blank or broken page).
 
-### US-1.2 — Event list shows all fields
+### US-1.2 — Event list shows only name and vote count (revised — see 02-user-stories.md)
 
-- Given an event exists in the list, when it renders, then its name, location, type, description, date/time, and Base support status are all visible without further navigation.
-- Given an event's Base support flag is true, when rendered, then the list visibly distinguishes it from an event without Base support.
-- Given an event's Base support flag is false, when rendered, then it is visibly distinct from the "true" state (not merely the absence of a label).
+- Given an event exists in the list, when it renders, then its name (linked to its detail page) and total vote count are visible.
+- Given an event exists in the list, when it renders, then its location, type, description, date/time, and Base support status are **not** shown — that's US-1.14's job, on the event's own page.
 
 ### US-1.3 — Manual entry, all fields
 
@@ -73,6 +72,12 @@ Each block maps 1:1 to a story ID for traceability.
 - Given a User-role account is logged in, when they navigate the app, then Leader-only actions (the Base-support toggle) are not available.
 - Given no one is logged in, when the app loads, then the person is prompted to log in before any role-specific action is available.
 
+### US-1.14 — Event detail page shows all fields and the submitter
+
+- Given an event exists, when its detail page renders, then its name, location, type, description, date/time, and Base support status are all visible.
+- Given an event exists, when its detail page renders, then who submitted it is shown, resolved to their display name (not a raw account id).
+- Given an event's Base support flag is true, when its detail page renders, then it is visibly distinguished from an event without Base support (same distinctness requirement US-1.2 originally had, now scoped here).
+
 ## Phase 2 — Democracy
 
 ### US-2.1 — Vote on an event
@@ -119,6 +124,17 @@ Each block maps 1:1 to a story ID for traceability.
 
 - Given event ideas exist that the current logged-in User has not yet voted on, when they open the needs-voting view, then only those events are listed, newest first.
 - Given the User has voted on every existing event, when they open the needs-voting view, then an empty-state message is shown.
+
+### US-3.4 — Home page as a navigable dashboard
+
+- Given the home page renders for a logged-in User, when it loads, then it shows a clickable entry point to every currently-navigable section (Events, Submit an Event).
+- Given the home page renders for a logged-in Leader, when it loads, then it additionally shows a clickable entry point to Leader Review.
+- Given the home page renders for a logged-in User (not a Leader), when it loads, then no Leader Review entry point is shown.
+
+### US-3.5 — Consistent, modern styling
+
+- Given any page in the app, when it renders, then it uses the same component library and visual language as every other page (no page looks like it belongs to a different app).
+- This story is inherently more qualitative than the others in this document — "looks modern and consistent" isn't fully reducible to an automated assertion. Verification is primarily a manual/visual review across pages, not a Vitest test. Where there's an objective piece (e.g. "every interactive control is a Nuxt UI component, not a bare unstyled `<button>`"), that part is testable; the subjective aesthetic judgment isn't.
 
 ## Confirmed clarifications
 

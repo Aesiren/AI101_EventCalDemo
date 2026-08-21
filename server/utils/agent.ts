@@ -127,22 +127,25 @@ export async function assist(
     }
   }
 
-  if (missingFields.length > 0) {
-    return {
-      proposedFields,
-      missingFields,
-      guidelineResult,
-      followUpQuestion: buildMissingFieldsQuestion(missingFields),
-      readyToSubmit: false
-    }
-  }
-
+  // Correctable conflicts also come before "what's still missing" — a user facing a content
+  // problem should see it immediately, before being asked to fill in logistics (location, date)
+  // for an idea they might decide not to bother revising at all.
   if (guidelineResult.status === 'correctable') {
     return {
       proposedFields,
       missingFields,
       guidelineResult,
       followUpQuestion: guidelineResult.message,
+      readyToSubmit: false
+    }
+  }
+
+  if (missingFields.length > 0) {
+    return {
+      proposedFields,
+      missingFields,
+      guidelineResult,
+      followUpQuestion: buildMissingFieldsQuestion(missingFields),
       readyToSubmit: false
     }
   }

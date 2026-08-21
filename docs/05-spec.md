@@ -44,6 +44,8 @@ The agent applies these regardless of how the input is phrased (including inject
 
 Only the two "irreparable" rows bypass the correction path; every other conflict gets a specific, named correction request before any rejection.
 
+**Response priority (agent.ts), confirmed during manual testing:** rejected > correctable > missing fields > ready to submit. A guideline conflict — whether outright rejection or a correctable one — is always surfaced before asking for any still-missing fields (location, date/time, etc.). The reasoning: a user facing a content problem should see it immediately, rather than being asked to fill in logistics for an idea they might decide not to bother revising at all.
+
 ## Data model (sketch — entities and relationships, not code)
 
 **Account**

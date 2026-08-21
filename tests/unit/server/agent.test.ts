@@ -113,6 +113,18 @@ describe('assist', () => {
     expect(result.followUpQuestion).toMatch(/alcohol/i)
   })
 
+  it('surfaces a correctable guideline conflict even when other fields are still missing — the user should see a content problem before being asked for more logistics they might not want to bother with', async () => {
+    const { client } = mockClient({
+      name: 'Wine Tasting',
+      description: 'A wine tasting with a full bar.'
+      // location/type/dateTime all still missing — correctable must still win over "ask for more info".
+    })
+    const result = await assist([], 'text', client as never)
+    expect(result.guidelineResult.status).toBe('correctable')
+    expect(result.followUpQuestion).toMatch(/alcohol/i)
+    expect(result.readyToSubmit).toBe(false)
+  })
+
   it('a revised, compliant resubmission clears on the next turn (TC-1.7-05)', async () => {
     const { client } = mockClient({
       ...COMPLETE_FIELDS,

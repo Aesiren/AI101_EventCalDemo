@@ -66,6 +66,19 @@ export function useEvents() {
     return fetcher<Event>(`/api/events/${id}/${kind}`, { method: 'POST' })
   }
 
+  // For the chart and needs-voting views (US-3.2, US-3.3, Milestone 6) — both need every event's
+  // interest summary at once to rank/filter with. Deliberately composed from the existing
+  // per-event fetchInterest() (Promise.all over the current `events` list) rather than a new bulk
+  // API route — Milestone 6 is scoped as "no new server contracts expected", and the seeded demo
+  // data is small enough that N parallel requests is a non-issue. Assumes refresh() has already
+  // populated `events`.
+  async function fetchAllInterests(fetcher: typeof $fetch = $fetch): Promise<Record<string, EventInterestSummary>> {
+    const entries = await Promise.all(
+      events.value.map(async event => [event.id, await fetchInterest(event.id, fetcher)] as const)
+    )
+    return Object.fromEntries(entries)
+  }
+
   return {
     events,
     refresh,
@@ -74,6 +87,7 @@ export function useEvents() {
     setBaseSupport,
     setResourcesCommitted,
     fetchInterest,
-    castInterest
+    castInterest,
+    fetchAllInterests
   }
 }

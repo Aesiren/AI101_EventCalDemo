@@ -144,4 +144,32 @@ describe('useEvents', () => {
 
     expect(fetchMock).toHaveBeenCalledWith('/api/events/event-1/volunteer', { method: 'POST' })
   })
+
+  it('fetchAllInterests() fetches an interest summary per event in the current list, keyed by event id (US-3.2, US-3.3)', async () => {
+    const fetchMock = vi.fn(async (url: string) => {
+      if (url === '/api/events/event-1/interest') return { voteCount: 2, myInterest: 'vote' }
+      if (url === '/api/events/event-2/interest') return { voteCount: 0, myInterest: null }
+      throw new Error(`unexpected url: ${url}`)
+    })
+    const { events, fetchAllInterests } = useEvents()
+    events.value = [EVENT_A, EVENT_B]
+
+    const result = await fetchAllInterests(fetchMock as never)
+
+    expect(result).toEqual({
+      'event-1': { voteCount: 2, myInterest: 'vote' },
+      'event-2': { voteCount: 0, myInterest: null }
+    })
+  })
+
+  it('fetchAllInterests() resolves to an empty object when there are no events', async () => {
+    const fetchMock = vi.fn()
+    const { events, fetchAllInterests } = useEvents()
+    events.value = []
+
+    const result = await fetchAllInterests(fetchMock as never)
+
+    expect(result).toEqual({})
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
 })

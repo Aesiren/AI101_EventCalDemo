@@ -37,6 +37,15 @@ describe('home page', () => {
     expect(wrapper.find('a[href="/leader"]').exists()).toBe(false)
   })
 
+  it('shows a dashboard entry for every Milestone 6 view (US-3.4, calendar/votes/needs-voting)', async () => {
+    mockCurrentAccount = ref(USER)
+    mockIsLeader = ref(false)
+    const wrapper = await mountSuspended(IndexPage)
+    expect(wrapper.find('a[href="/calendar"]').exists()).toBe(true)
+    expect(wrapper.find('a[href="/votes"]').exists()).toBe(true)
+    expect(wrapper.find('a[href="/needs-voting"]').exists()).toBe(true)
+  })
+
   it('also shows a Leader Review link for a logged-in Leader', async () => {
     mockCurrentAccount = ref(LEADER)
     mockIsLeader = ref(true)

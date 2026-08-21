@@ -119,7 +119,7 @@ One deliberate deviation from "Nuxt UI components everywhere": the login account
 (`:toggle="false"`) since it broke a "no button when logged out" test and this app's nav doesn't
 need a mobile drawer.
 
-## Milestone 6 — Phase 3 (Beautification)
+## Milestone 6 — Phase 3 (Beautification) — done
 
 Covers US-3.1–3.3 (FR-10, FR-11, FR-12). Purely additive reads over existing data — no new server contracts expected.
 
@@ -131,6 +131,33 @@ Covers US-3.1–3.3 (FR-10, FR-11, FR-12). Purely additive reads over existing d
 6. `app/pages/needs-voting.vue` — using that filter, including the empty state when the user has voted on everything (TC-3.3-02).
 7. Wire navigation between all views (`events`, `leader`, `calendar`, `votes`, `needs-voting`) — this includes adding each new page to the Milestone-5 dashboard (`app/pages/index.vue`) and header nav (`app/layouts/default.vue`), not just cross-links between the new pages themselves.
 8. New pages should follow the Nuxt UI styling established in Milestone 5 from the start, rather than being restyled after the fact.
+
+**Done.** All 8 steps built (191/191 tests passing, `npx nuxi typecheck` clean, live dev-server
+smoke test of `/calendar` and `/votes` confirmed real seeded-data rendering; `/needs-voting`
+confirmed redirecting an unauthenticated `curl` request, as expected of its login gate). Notes on
+what "no new server contracts" meant in practice, and a few small additions beyond the step list:
+
+- **No new API routes.** `app/composables/useEvents.ts` gained one new method,
+  `fetchAllInterests()`, but it's just `Promise.all` over the *existing* per-event
+  `GET /api/events/:id/interest` route (one call per event in the current list) — acceptable at
+  this demo's data volumes (see docs/05-spec.md's NFR on scale), and it keeps the chart/needs-
+  voting pages' vote/interest data one call away without a bulk endpoint.
+- **`app/middleware/requireLogin.ts`** (new, not in the original step list) — `needs-voting.vue`
+  is meaningless without a "current viewer" to filter against, so it needed its own login gate,
+  same pattern as `requireLeader.ts` (`resolveLoginRedirect`, pure and independently tested,
+  registered as `'require-login'` kebab-case).
+- **`shared/utils/groupEventsByDate.ts`, `rankEventsByVotes.ts`, `filterNeedsVoting.ts`** — all
+  three pure helpers take their data as parameters (events, vote-count map, interest map) rather
+  than fetching anything themselves, same reasoning as `store.ts`'s injectable clock. Calendar's
+  "current month" is likewise read from the system clock in exactly one place
+  (`calendar.vue`, not the helper) — tests control it via Vitest's fake timers.
+  `filterNeedsVoting` also excludes the viewer's own submitted events and treats volunteering the
+  same as voting — see the Confirmed clarifications section in `03-acceptance-criteria.md`.
+- **Chart view (`votes.vue`) is hand-rolled bars**, not a charting library — adding one would sit
+  outside the "one styling system" boundary from `05-spec.md`'s NFR for a demo that doesn't need
+  more than a ranked list with proportional width bars.
+- Calendar/Votes are public reads in the header nav (viewable logged out, same as Events); Needs
+  Voting only appears once logged in, same as Submit Event.
 
 ## Traceability
 

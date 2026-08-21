@@ -38,11 +38,19 @@ import { useAuth } from '../composables/useAuth'
 const { currentAccount, isLeader, logout } = useAuth()
 
 const navItems = computed(() => {
-  const items = [{ label: 'Events', to: '/events' }]
+  // Events/Calendar/Votes are public reads — viewable whether or not anyone's logged in, same as
+  // events/index.vue itself has no login gate. Needs Voting requires a "current viewer" to filter
+  // against (requireLogin.ts), so it's conditional on login, same as Submit Event.
+  const items = [
+    { label: 'Events', to: '/events' },
+    { label: 'Calendar', to: '/calendar' },
+    { label: 'Top Voted', to: '/votes' }
+  ]
   if (isLeader.value) {
     items.push({ label: 'Leader Review', to: '/leader' })
   }
   if (currentAccount.value) {
+    items.push({ label: 'Needs Voting', to: '/needs-voting' })
     items.push({ label: 'Submit Event', to: '/submit' })
   }
   return [items]

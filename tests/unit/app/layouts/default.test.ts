@@ -47,7 +47,23 @@ describe('default layout', () => {
     expect(wrapper.find('a[href="/login"]').exists()).toBe(true)
     expect(wrapper.find('a[href="/submit"]').exists()).toBe(false)
     expect(wrapper.find('a[href="/leader"]').exists()).toBe(false)
+    expect(wrapper.find('a[href="/needs-voting"]').exists()).toBe(false)
     expect(wrapper.find('button').exists()).toBe(false)
+  })
+
+  it('shows Calendar and Top Voted nav links even when logged out — public reads (Milestone 6)', async () => {
+    mockCurrentAccount = ref(null)
+    mockIsLeader = ref(false)
+    const wrapper = await mountSuspended(DefaultLayout)
+    expect(wrapper.find('a[href="/calendar"]').exists()).toBe(true)
+    expect(wrapper.find('a[href="/votes"]').exists()).toBe(true)
+  })
+
+  it('shows Needs Voting once logged in', async () => {
+    mockCurrentAccount = ref(USER)
+    mockIsLeader = ref(false)
+    const wrapper = await mountSuspended(DefaultLayout)
+    expect(wrapper.find('a[href="/needs-voting"]').exists()).toBe(true)
   })
 
   it('shows Submit Event, account name, and a Log Out button for a logged-in User', async () => {

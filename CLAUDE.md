@@ -53,30 +53,48 @@ app/
       [id].vue         full fields + submitter + vote/volunteer controls (US-1.14, US-2.1-2.3)
     submit.vue        US-1.3–US-1.9 (Milestone 3+)
     leader.vue        US-1.11, US-1.12
+    calendar.vue       month grid (US-3.1, built Milestone 6) — public, no login needed
+    votes.vue          chart view, hand-rolled bars (US-3.2, built Milestone 6) — public
+    needs-voting.vue   events the viewer hasn't voted/volunteered on (US-3.3, built Milestone 6)
+                       — gated by 'require-login' middleware, since it's meaningless logged out
   components/    EventCard, EventForm, AiAssistPanel, BaseSupportToggle, ResourcesCommittedToggle, VoteControls, VoteCount
-  composables/   useAuth (login, listAccounts), useEvents (refresh, createEvent, fetchEvent)
-  middleware/    requireLeader.ts — but referenced in definePageMeta as 'require-leader'
-                 (kebab-case). Nuxt derives the middleware name from the filename and
-                 normalizes camelCase to kebab-case; the camelCase string typechecks as an error
-                 (TS2820) but wouldn't fail at runtime in a component-only test, since middleware
-                 doesn't execute during an isolated mountSuspended mount. Caught by
-                 `npx nuxi typecheck`, not by the test suite — another reason to always run both.
+  composables/   useAuth (login, listAccounts), useEvents (refresh, createEvent, fetchEvent,
+                 fetchAllInterests — bulk per-event interest data for votes.vue/needs-voting.vue,
+                 composed from the existing per-event interest route, not a new bulk endpoint)
+  middleware/    requireLeader.ts, requireLogin.ts — both referenced in definePageMeta with their
+                 kebab-case name ('require-leader', 'require-login'). Nuxt derives the middleware
+                 name from the filename and normalizes camelCase to kebab-case; the camelCase
+                 string typechecks as an error (TS2820) but wouldn't fail at runtime in a
+                 component-only test, since middleware doesn't execute during an isolated
+                 mountSuspended mount. Caught by `npx nuxi typecheck`, not by the test suite —
+                 another reason to always run both.
   utils/         resolveHomeRedirect — pure logic for the index.vue gate
 server/
   api/           thin route handlers only — no business logic here
   utils/
     store.ts       in-memory data store (implemented)
-    guidelines.ts   AI content-guideline evaluation (not yet implemented — Milestone 3)
-    agent.ts        Anthropic SDK wrapper (not yet implemented — Milestone 3)
+    guidelines.ts   AI content-guideline evaluation (implemented, Milestone 3)
+    agent.ts        Anthropic SDK wrapper (implemented, Milestone 3)
 shared/
   types.ts             Event, Account, Interest, GuidelineResult — the one place these shapes are defined
   eventValidation.ts   presence validation, used by both the server route and EventForm.vue
+  utils/               pure helpers, none touching the network (US-3.1-3.3, built Milestone 6):
+    groupEventsByDate.ts   month-grid grouping for calendar.vue — takes `referenceDate` as a
+                           parameter rather than reading the system clock itself (same reasoning
+                           as store.ts's injectable clock); calendar.vue is the one place that
+                           actually reads `new Date()`, and tests control it via Vitest fake timers
+    rankEventsByVotes.ts   vote-count ranking for votes.vue; relies on Array.sort's ES2019+
+                           stability to break ties by insertion order, no extra logic needed
+    filterNeedsVoting.ts   "hasn't voted/volunteered yet" filter for needs-voting.vue — also
+                           excludes the viewer's own submitted events (self-voting is blocked
+                           everywhere else) and treats volunteering as satisfying "has voted",
+                           consistent with the vote-count change below
 tests/unit/      mirrors server/, shared/, and app/ (components/composables/middleware/pages/utils)
 ```
 
-Routing decision logic (`resolveHomeRedirect`, `resolveLeaderRedirect`) is always a pure
-`(Account | null) -> string | null` function, tested directly — separate from the thin
-`navigateTo`-calling wrapper, which isn't unit-tested. See `docs/07-milestones.md` Milestone 2
+Routing decision logic (`resolveHomeRedirect`, `resolveLeaderRedirect`, `resolveLoginRedirect`) is
+always a pure `(Account | null) -> string | null` function, tested directly — separate from the
+thin `navigateTo`-calling wrapper, which isn't unit-tested. See `docs/07-milestones.md` Milestone 2
 for why.
 
 ## Critical architectural rule
@@ -122,9 +140,14 @@ SDK client. Don't break this boundary for convenience.
 
 ## Status / known gaps
 
-- **Milestones 1–5 complete** — Phase 1, Phase 2, and the UI Consistency & Navigation milestone
-  are all done. Only **Milestone 6 — Phase 3 (Beautification)** remains: calendar, chart, and
-  needs-voting views — see `docs/07-milestones.md`.
+- **All 6 milestones complete.** Phase 1, Phase 2, UI Consistency & Navigation, and Phase 3
+  (Beautification — calendar, chart, needs-voting) are all built. See `docs/07-milestones.md`.
+- **Volunteering counts as a vote, not an alternative to one** (US-2.3, revised after Milestone 5
+  at your request) — `store.ts`'s `getVoteCount()` counts Interest records of kind `'vote'` *or*
+  `'volunteer'`. The `kind` field still distinguishes the two for "already voted"/"already
+  volunteering" UI state (`getMyInterest`) and the Leader-only volunteer roster (`getVolunteers`)
+  — only the tally treats them the same. `filterNeedsVoting` (needs-voting.vue) follows the same
+  rule: volunteering satisfies "has weighed in," same as voting does.
 - **US-1.2 was revised** (see `docs/02-user-stories.md`): the event list shows only name + vote
   count now, not all six fields — that moved to the event's own page (US-1.14). Both are built.
 - **Nuxt UI (v4.11+, on Tailwind CSS 4)** is installed and used across every page/component —

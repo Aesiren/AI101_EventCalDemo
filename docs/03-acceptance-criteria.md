@@ -122,8 +122,8 @@ Each block maps 1:1 to a story ID for traceability.
 
 ### US-3.3 — Needs-voting view
 
-- Given event ideas exist that the current logged-in User has not yet voted on, when they open the needs-voting view, then only those events are listed, newest first.
-- Given the User has voted on every existing event, when they open the needs-voting view, then an empty-state message is shown.
+- Given event ideas exist that the current logged-in User has not yet voted or volunteered on, when they open the needs-voting view, then only those events are listed, newest first, excluding the User's own submitted events (they can never vote on those — see Confirmed clarifications below).
+- Given the User has voted on every existing event they're able to vote on, when they open the needs-voting view, then an empty-state message is shown.
 
 ### US-3.4 — Home page as a navigable dashboard
 
@@ -143,5 +143,6 @@ Prior open judgment calls, now resolved and reflected in the AC above:
 1. **Correctable vs. irreparable guideline mapping (US-1.7 vs. US-1.9)** — under-21 + alcohol and/or any drug use are grounds for immediate outright rejection whenever present at all, whether central to the event's premise or merely incidental/mentioned. All other guidelines (alcohol-specific focus, branding/endorsement, gambling limits, explicit content) remain correctable.
 2. **US-3.3 "needs voting"** — confirmed as "events the current logged-in User has not yet voted on," not "events with zero votes total."
 3. **Base support default** — confirmed: every new event starts with Base support = false regardless of submission path; only a Leader account can set it to true.
+4. **US-3.3 scope, resolved during Milestone 6 implementation**: "hasn't voted on" excludes a User's own submitted events (self-voting is blocked everywhere else in the app — surfacing an event here the User can never act on would be a dead end, not a to-do) and treats volunteering the same as voting (consistent with US-2.3's revision: volunteering is a stronger form of support, not an alternative to a vote, so it also satisfies "has weighed in").
 
 No open items remain blocking Step 5.

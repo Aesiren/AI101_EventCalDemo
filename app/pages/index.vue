@@ -44,8 +44,11 @@ if (redirectTo) {
 
 const sections = computed(() => {
   const items = [
-    { to: '/events', label: 'View Events', description: 'Browse everything submitted so far.', icon: 'i-lucide:calendar-days' },
-    { to: '/submit', label: 'Submit an Event', description: 'Add a new event, manually or with AI help.', icon: 'i-lucide:circle-plus' }
+    { to: '/events', label: 'View Events', description: 'Browse everything submitted so far.', icon: 'i-lucide:list' },
+    { to: '/submit', label: 'Submit an Event', description: 'Add a new event, manually or with AI help.', icon: 'i-lucide:circle-plus' },
+    { to: '/calendar', label: 'Calendar', description: 'See what\'s happening, day by day.', icon: 'i-lucide:calendar-days' },
+    { to: '/votes', label: 'Top Voted', description: 'See which event ideas have the most support.', icon: 'i-lucide:bar-chart-3' },
+    { to: '/needs-voting', label: 'Needs Your Vote', description: 'Events you haven\'t weighed in on yet.', icon: 'i-lucide:vote' }
   ]
   if (isLeader.value) {
     items.push({ to: '/leader', label: 'Leader Review', description: 'Approve Base support and track resources.', icon: 'i-lucide:shield-check' })

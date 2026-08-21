@@ -19,7 +19,11 @@ Nuxt 4 changed the default project layout: `pages/`, `components/`, `composables
 ├── CLAUDE.md                    (written once implementation starts — see below)
 ├── docs/                        (this planning chain, 00–06)
 ├── shared/
-│   └── types.ts                 (Event, Account, Interest, GuidelineResult — the one place these shapes are defined; both client and server import from here)
+│   ├── types.ts                 (Event, Account, Interest, GuidelineResult — the one place these shapes are defined; both client and server import from here)
+│   └── utils/                   pure helpers used by pages/components, none of them touching the network (US-3.1-3.3, Milestone 6)
+│       ├── groupEventsByDate.ts      month-grid grouping for calendar.vue
+│       ├── rankEventsByVotes.ts      vote-count ranking, ties broken by insertion order, for votes.vue
+│       └── filterNeedsVoting.ts      "hasn't voted/volunteered yet, excluding own events" filter for needs-voting.vue
 ├── app/
 │   ├── app.vue
 │   ├── pages/
@@ -43,9 +47,10 @@ Nuxt 4 changed the default project layout: `pages/`, `components/`, `composables
 │   │   └── VoteCount.vue             read-only vote total + volunteer names, for leader.vue (US-2.4, US-2.5)
 │   ├── composables/
 │   │   ├── useAuth.ts                current account/session state (US-1.13), plus listAccounts() for the login dropdown
-│   │   └── useEvents.ts              fetch + mutate events against the API, plus fetchEvent() for the detail page
+│   │   └── useEvents.ts              fetch + mutate events against the API, plus fetchEvent() for the detail page and fetchAllInterests() (US-3.2, US-3.3, Milestone 6 — bulk interest data for the chart/needs-voting views, composed from the existing per-event interest route rather than a new one)
 │   ├── middleware/
-│   │   └── requireLeader.ts          route/action guard for Leader-only pages (US-1.12)
+│   │   ├── requireLeader.ts          route/action guard for Leader-only pages (US-1.12)
+│   │   └── requireLogin.ts           route guard for pages that need a "current viewer" but not Leader status — needs-voting.vue (US-3.3, Milestone 6)
 │   └── utils/
 │       └── resolveHomeRedirect.ts    pure logic for the home-page gate (not logged in -> /login, else -> /events)
 ├── server/

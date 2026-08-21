@@ -25,21 +25,27 @@ No UI. Done when store unit tests pass, `npm run dev` boots an empty app without
 
 Covers US-1.1–1.4, 1.11–1.13 (FR-1, FR-2, FR-5, FR-6). Done when manual submission, login, and the Leader's Base-support toggle work end-to-end, with the AI-assist entry point hidden or disabled.
 
+**Routing note (retrofitted after steps 1–11 were already built the old way):** `app/pages/index.vue` is the site's home page in Nuxt's file-based routing — it's what loads at `/`, before anything else. It can't be the event list; it has to be a redirect gate (not logged in → `/login`, logged in → `/events`), or the event list would be the only page anyone could ever reach. The event list itself lives at `app/pages/events/index.vue`, with `app/pages/events/[id].vue` as an individual event's page. The list below reflects this corrected structure — not the order these were actually first built in.
+
 1. Extend `shared/types.ts` as needed (e.g. `NewEventInput`, login request/response shapes).
 2. `server/api/auth/login.post.ts` — test then implement mock login (US-1.13).
-3. `app/composables/useAuth.ts` — current account/session state; test then implement.
-4. `app/middleware/requireLeader.ts` — Leader-only route/action guard; test then implement.
-5. `server/api/events/index.get.ts` (FR-1) — list events; test then implement.
-6. `server/api/events/index.post.ts` (FR-2) — manual create with presence validation on all fields including `dateTime`; write validation tests first (TC-1.4-01–06), then implement.
-7. `app/composables/useEvents.ts` — wraps the events API for the UI layer; test then implement.
-8. `app/components/EventCard.vue` — renders all six fields, true/false Base-support states visibly distinct (US-1.2 / TC-1.2-01–03); component test then implement.
-9. `app/components/EventForm.vue` — manual entry + blocking validation UI (US-1.3, US-1.4); component test then implement.
-10. `app/pages/index.vue` — event list, including empty state (TC-1.1-02); wire `EventCard` + `useEvents`.
-11. `app/pages/login.vue` — login UI.
-12. `app/pages/submit.vue` — hosts `EventForm` (manual path only for now).
-13. `server/api/events/[id]/support.patch.ts` (FR-5) — Leader-only toggle; test then implement, including the permission check (TC-1.12-03).
-14. `app/components/BaseSupportToggle.vue` — Leader-only control, not rendered/available for User-role accounts; component test then implement.
-15. `app/pages/leader.vue` — Leader view: full event list + toggle (US-1.11, US-1.12).
+3. `server/api/auth/accounts.get.ts` — lists seeded accounts (id/name/role, nothing sensitive); thin, no dedicated test. Backs the login page's dropdown (see step 14) — closes the account-listing gap flagged at step 1.
+4. `app/composables/useAuth.ts` — current account/session state, plus `login()` and `listAccounts()`; test then implement. `login`/`listAccounts` take an injectable `fetcher` (default `$fetch`) rather than relying on Nuxt's `$fetch` auto-import being mockable (see `CLAUDE.md`).
+5. `app/middleware/requireLeader.ts` — Leader-only route/action guard; test then implement. Decision logic (`resolveLeaderRedirect`) is a pure function, tested separately from the `navigateTo` call that acts on it.
+6. `server/api/events/index.get.ts` (FR-1) — list events; test then implement.
+7. `server/api/events/index.post.ts` (FR-2) — manual create with presence validation on all fields including `dateTime`; write validation tests first (TC-1.4-01–06), then implement. Validation logic lives in `shared/eventValidation.ts` (not `server/utils/`), since `EventForm.vue` needs the identical rule for client-side feedback.
+8. `server/api/events/[id].get.ts` — single event fetch, backed by a new `store.getEvent(id)`; needed for the detail page (step 13).
+9. `app/composables/useEvents.ts` — wraps the events API for the UI layer (`refresh`, `createEvent`, `fetchEvent`); test then implement, same injectable-fetcher pattern as `useAuth`.
+10. `app/components/EventCard.vue` — renders all six fields, true/false Base-support states visibly distinct (US-1.2 / TC-1.2-01–03); component test then implement.
+11. `app/components/EventForm.vue` — manual entry + blocking validation UI (US-1.3, US-1.4); component test then implement.
+12. `app/pages/events/index.vue` — the event list itself, including empty state (TC-1.1-02); wire `EventCard` + `useEvents`, each card linked to its detail page.
+13. `app/pages/events/[id].vue` — individual event detail page; fetches by route id, shows a not-found state if the id doesn't match anything.
+14. `app/pages/login.vue` — login UI. Dropdown-only, populated from `useAuth().listAccounts()` — no free-text name entry, so a name can't be mistyped.
+15. `app/utils/resolveHomeRedirect.ts` + `app/pages/index.vue` — the home/redirect gate described above. `resolveHomeRedirect` is a pure function (same pattern as `resolveLeaderRedirect`), tested separately from the page's `navigateTo` call.
+16. `app/pages/submit.vue` — hosts `EventForm` (manual path only for now).
+17. `server/api/events/[id]/support.patch.ts` (FR-5) — Leader-only toggle; test then implement, including the permission check (TC-1.12-03).
+18. `app/components/BaseSupportToggle.vue` — Leader-only control, not rendered/available for User-role accounts; component test then implement.
+19. `app/pages/leader.vue` — Leader view: full event list + toggle (US-1.11, US-1.12).
 
 ## Milestone 3 — AI layer
 
@@ -59,7 +65,7 @@ Covers US-2.1–2.5 (FR-7, FR-8, FR-9). Mostly wiring, since `castInterest`'s ru
 1. `server/api/events/[id]/vote.post.ts` (FR-7) — test (TC-2.1-01, self-vote blocked TC-2.1-02, duplicate-vote no-op TC-2.2-01) then implement, calling `store.castInterest(kind: 'vote')`.
 2. `server/api/events/[id]/volunteer.post.ts` (FR-8) — test (mutual exclusivity, TC-2.3-01–03) then implement, calling `store.castInterest(kind: 'volunteer')`.
 3. `app/components/VoteControls.vue` — vote/volunteer buttons, "already voted" state (TC-2.2-02), and hides voting controls on the current user's own events (TC-2.1-02 at the UI layer, not just the API); component test then implement.
-4. Wire `VoteControls` into `app/pages/index.vue`.
+4. Wire `VoteControls` into `app/pages/events/index.vue`.
 5. Display vote totals on `app/pages/leader.vue` (US-2.4 / TC-2.4-01).
 6. `server/api/events/[id]/resources.patch.ts` (FR-9) — Leader-only toggle, mirrors `support.patch.ts`; test (TC-2.6-01–03, including the permission check) then implement, calling `store.setResourcesCommitted()`.
 7. `app/components/ResourcesCommittedToggle.vue` — Leader-only control, not rendered/available for User-role accounts; component test then implement.
@@ -75,7 +81,7 @@ Covers US-3.1–3.3 (FR-10, FR-11, FR-12). Purely additive reads over existing d
 4. `app/pages/votes.vue` — chart view using that helper (US-3.2 / TC-3.2-01).
 5. Write a pure, testable filter for "events the current user hasn't voted on yet, newest first" — test first, then implement.
 6. `app/pages/needs-voting.vue` — using that filter, including the empty state when the user has voted on everything (TC-3.3-02).
-7. Wire navigation between all views (`index`, `leader`, `calendar`, `votes`, `needs-voting`).
+7. Wire navigation between all views (`events`, `leader`, `calendar`, `votes`, `needs-voting`).
 
 ## Traceability
 

@@ -47,6 +47,11 @@ export function createStore(options: StoreOptions = {}) {
     return events.find(e => e.id === eventId)
   }
 
+  function getEvent(eventId: string): Event | undefined {
+    const event = findEvent(eventId)
+    return event ? { ...event } : undefined
+  }
+
   function requireEvent(eventId: string): Event {
     const event = findEvent(eventId)
     if (!event) {
@@ -106,6 +111,7 @@ export function createStore(options: StoreOptions = {}) {
     listAccounts,
     findAccountByName,
     listEvents,
+    getEvent,
     createEvent,
     setBaseSupport,
     setResourcesCommitted,

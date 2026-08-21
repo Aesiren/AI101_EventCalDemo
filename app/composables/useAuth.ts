@@ -26,10 +26,17 @@ export function useAuth() {
     currentAccount.value = null
   }
 
+  // Lets the login page offer a dropdown of real seeded accounts instead of free-text entry
+  // (avoids typos, and closes the account-listing gap flagged back in Milestone 2 step 1).
+  async function listAccounts(fetcher: typeof $fetch = $fetch): Promise<Account[]> {
+    return fetcher<Account[]>('/api/auth/accounts')
+  }
+
   return {
     currentAccount,
     isLeader,
     login,
-    logout
+    logout,
+    listAccounts
   }
 }

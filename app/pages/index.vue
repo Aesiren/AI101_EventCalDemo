@@ -1,22 +1,15 @@
 <template>
   <main>
-    <h1>Events</h1>
-    <p v-if="events.length === 0" class="empty-state">
-      No events have been submitted yet.
-    </p>
-    <ul v-else class="event-list">
-      <li v-for="event in events" :key="event.id">
-        <EventCard :event="event" />
-      </li>
-    </ul>
+    <p>Redirecting…</p>
   </main>
 </template>
 
 <script setup lang="ts">
-// Event list (US-1.1, US-1.2). EventCard is left to Nuxt's component auto-import (standard for
-// template-only usage); useEvents is imported explicitly per project convention.
-import { useEvents } from '../composables/useEvents'
+// Home page — a pure redirect gate, not content of its own. Not logged in -> /login; logged in
+// (either role) -> /events. The event list itself moved to app/pages/events/index.vue.
+import { useAuth } from '../composables/useAuth'
+import { resolveHomeRedirect } from '../utils/resolveHomeRedirect'
 
-const { events, refresh } = useEvents()
-await refresh()
+const { currentAccount } = useAuth()
+await navigateTo(resolveHomeRedirect(currentAccount.value))
 </script>

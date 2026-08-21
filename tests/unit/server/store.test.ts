@@ -44,6 +44,17 @@ describe('store', () => {
     expect(event.createdAt).toBe('2026-08-21T09:00:00.000Z')
   })
 
+  it('gets a single event by id (for the event detail page)', () => {
+    const store = createStore()
+    const created = store.createEvent(baseInput())
+    expect(store.getEvent(created.id)).toEqual(created)
+  })
+
+  it('returns undefined for an unknown event id', () => {
+    const store = createStore()
+    expect(store.getEvent('nope')).toBeUndefined()
+  })
+
   it('stores the submitted fields, including dateTime, unchanged', () => {
     const store = createStore()
     const event = store.createEvent(baseInput({ dateTime: '2026-10-05T14:30:00.000Z' }))

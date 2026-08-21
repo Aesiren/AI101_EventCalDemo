@@ -23,9 +23,16 @@ export function useEvents() {
     return created
   }
 
+  // For the event detail page — independent of the `events` list state, same as useAuth's
+  // listAccounts().
+  async function fetchEvent(id: string, fetcher: typeof $fetch = $fetch): Promise<Event> {
+    return fetcher<Event>(`/api/events/${id}`)
+  }
+
   return {
     events,
     refresh,
-    createEvent
+    createEvent,
+    fetchEvent
   }
 }

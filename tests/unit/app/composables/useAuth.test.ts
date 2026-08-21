@@ -60,4 +60,14 @@ describe('useAuth', () => {
     logout()
     expect(currentAccount.value).toBeNull()
   })
+
+  it('listAccounts() fetches the seeded account list, for the login dropdown', async () => {
+    const fetchMock = vi.fn().mockResolvedValue([USER, LEADER])
+    const { listAccounts } = useAuth()
+
+    const accounts = await listAccounts(fetchMock as never)
+
+    expect(fetchMock).toHaveBeenCalledWith('/api/auth/accounts')
+    expect(accounts).toEqual([USER, LEADER])
+  })
 })

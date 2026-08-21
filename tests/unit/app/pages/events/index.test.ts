@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from 'vitest'
 import { ref } from 'vue'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
-import IndexPage from '../../../../app/pages/index.vue'
-import type { Event } from '../../../../shared/types'
+import EventsIndexPage from '../../../../../app/pages/events/index.vue'
+import type { Event } from '../../../../../shared/types'
 
 const EVENT_A: Event = {
   id: 'event-1',
@@ -23,32 +23,34 @@ let mockEvents = ref<Event[]>([])
 // Same reasoning as EventForm's test: explicit import of useEvents makes this a plain vi.mock,
 // no fighting Nuxt's $fetch auto-import. `refresh()` runs at page-load time here (top-level
 // await in <script setup>), so unlike EventCard this page can't be tested without mocking it.
-vi.mock('../../../../app/composables/useEvents', () => ({
+vi.mock('../../../../../app/composables/useEvents', () => ({
   useEvents: () => ({
     events: mockEvents,
     refresh: refreshMock,
-    createEvent: vi.fn()
+    createEvent: vi.fn(),
+    fetchEvent: vi.fn()
   })
 }))
 
-describe('index page', () => {
+describe('events index page', () => {
   it('fetches events on load', async () => {
     mockEvents = ref([])
     refreshMock.mockClear()
-    await mountSuspended(IndexPage)
+    await mountSuspended(EventsIndexPage)
     expect(refreshMock).toHaveBeenCalled()
   })
 
   it('shows an explicit empty-state message when there are no events (TC-1.1-02)', async () => {
     mockEvents = ref([])
-    const wrapper = await mountSuspended(IndexPage)
+    const wrapper = await mountSuspended(EventsIndexPage)
     expect(wrapper.text()).toMatch(/no events/i)
   })
 
-  it('renders an event card for each submitted event (TC-1.1-01)', async () => {
+  it('renders an event card for each submitted event, linked to its detail page (TC-1.1-01)', async () => {
     mockEvents = ref([EVENT_A])
-    const wrapper = await mountSuspended(IndexPage)
+    const wrapper = await mountSuspended(EventsIndexPage)
     expect(wrapper.text()).toContain('Community Cookout')
     expect(wrapper.text()).not.toMatch(/no events/i)
+    expect(wrapper.find('a[href="/events/event-1"]').exists()).toBe(true)
   })
 })

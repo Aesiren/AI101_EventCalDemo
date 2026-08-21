@@ -23,8 +23,11 @@ Nuxt 4 changed the default project layout: `pages/`, `components/`, `composables
 ├── app/
 │   ├── app.vue
 │   ├── pages/
-│   │   ├── index.vue                 US-1.1, US-1.2 — event list
+│   │   ├── index.vue                 home/redirect gate — not logged in -> /login, else -> /events (no content of its own)
 │   │   ├── login.vue                 US-1.13 — mock login
+│   │   ├── events/
+│   │   │   ├── index.vue              US-1.1, US-1.2 — event list (the actual "home" of the app)
+│   │   │   └── [id].vue               individual event detail page
 │   │   ├── submit.vue                US-1.3–US-1.9 — manual + AI-assisted submission
 │   │   ├── leader.vue                US-1.11, US-1.12 (+ US-2.4, US-2.5 in Phase 2)
 │   │   ├── calendar.vue              US-3.1 (Phase 3)
@@ -38,15 +41,19 @@ Nuxt 4 changed the default project layout: `pages/`, `components/`, `composables
 │   │   ├── ResourcesCommittedToggle.vue  Leader-only control (US-2.6)
 │   │   └── VoteControls.vue          vote/volunteer buttons (Phase 2)
 │   ├── composables/
-│   │   ├── useAuth.ts                current account/session state (US-1.13)
-│   │   └── useEvents.ts              fetch + mutate events against the API
-│   └── middleware/
-│       └── requireLeader.ts          route/action guard for Leader-only pages (US-1.12)
+│   │   ├── useAuth.ts                current account/session state (US-1.13), plus listAccounts() for the login dropdown
+│   │   └── useEvents.ts              fetch + mutate events against the API, plus fetchEvent() for the detail page
+│   ├── middleware/
+│   │   └── requireLeader.ts          route/action guard for Leader-only pages (US-1.12)
+│   └── utils/
+│       └── resolveHomeRedirect.ts    pure logic for the home-page gate (not logged in -> /login, else -> /events)
 ├── server/
 │   ├── api/
 │   │   ├── auth/login.post.ts            FR-6
+│   │   ├── auth/accounts.get.ts          seeded account list, for the login dropdown
 │   │   ├── events/index.get.ts           FR-1
 │   │   ├── events/index.post.ts          FR-2 (manual create, validated)
+│   │   ├── events/[id].get.ts            single event fetch, for the detail page
 │   │   ├── events/[id]/support.patch.ts  FR-5 (Leader-only)
 │   │   ├── events/[id]/vote.post.ts      FR-7 (Phase 2)
 │   │   ├── events/[id]/volunteer.post.ts FR-8 (Phase 2)
@@ -68,6 +75,7 @@ Plain-English signatures for the boundaries between modules — the targets TDD 
 
 **`server/utils/store.ts`**
 - `listEvents(): Event[]`
+- `getEvent(eventId): Event | undefined` — single event lookup, for the detail page.
 - `createEvent(input: NewEventInput): Event` — sets `baseSupport: false`, `createdAt: now` internally; caller can't set either.
 - `setBaseSupport(eventId, value: boolean): Event`
 - `setResourcesCommitted(eventId, value: boolean): Event` — Leader-only, mirrors `setBaseSupport` (US-2.6)
@@ -87,6 +95,8 @@ Plain-English signatures for the boundaries between modules — the targets TDD 
 **API routes** (`server/api/**`) — thin: parse request, call the corresponding store/guideline/agent function, return its result. No business logic lives in a route handler.
 
 **`app/composables/useEvents.ts`** — wraps the `/api/events*` routes for pages/components; nothing in the UI layer talks to `server/utils/*` directly.
+
+**`app/utils/resolveHomeRedirect.ts`** and **`app/middleware/requireLeader.ts`'s `resolveLeaderRedirect`** — both are pure `(Account | null) -> string | null` decision functions, kept separate from the `navigateTo` call that actually acts on them. This is the standing pattern for anything routing-related: decide first as testable pure logic, act second in a thin wrapper that isn't unit-tested directly.
 
 ## Test strategy
 

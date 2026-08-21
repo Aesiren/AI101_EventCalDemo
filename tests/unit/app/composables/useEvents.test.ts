@@ -74,4 +74,14 @@ describe('useEvents', () => {
     await expect(createEvent(badInput, failingFetch as never)).rejects.toThrow()
     expect(events.value).toEqual([EVENT_A])
   })
+
+  it('fetchEvent() fetches a single event by id, for the detail page', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(EVENT_A)
+    const { fetchEvent } = useEvents()
+
+    const result = await fetchEvent('event-1', fetchMock as never)
+
+    expect(fetchMock).toHaveBeenCalledWith('/api/events/event-1')
+    expect(result).toEqual(EVENT_A)
+  })
 })

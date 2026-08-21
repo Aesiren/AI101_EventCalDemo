@@ -33,10 +33,23 @@ under `server/`, and code shared between both lives in `shared/`.
 
 ```
 app/
-  pages/         one file per route
+  app.vue        MUST render <NuxtPage /> — the Nuxt starter template ships <NuxtWelcome />
+                 instead, which silently makes every pages/ route unreachable. Caught once
+                 already (Milestone 2); don't let it regress.
+  pages/
+    index.vue         home/redirect gate ONLY — not logged in -> /login, else -> /events.
+                       Nuxt's file-based routing makes this the page that loads at `/`, so it
+                       can never be the event list itself.
+    login.vue         US-1.13 — dropdown-only login (no free-text name entry)
+    events/
+      index.vue        the actual event list (US-1.1, US-1.2) — the app's real "home"
+      [id].vue         individual event detail page
+    submit.vue        US-1.3–US-1.9 (Milestone 3+)
+    leader.vue        US-1.11, US-1.12 (Milestone 2, in progress)
   components/    EventCard, EventForm, AiAssistPanel, BaseSupportToggle, ResourcesCommittedToggle, VoteControls
-  composables/   useAuth, useEvents
+  composables/   useAuth (login, listAccounts), useEvents (refresh, createEvent, fetchEvent)
   middleware/    requireLeader
+  utils/         resolveHomeRedirect — pure logic for the index.vue gate
 server/
   api/           thin route handlers only — no business logic here
   utils/
@@ -44,9 +57,15 @@ server/
     guidelines.ts   AI content-guideline evaluation (not yet implemented — Milestone 3)
     agent.ts        Anthropic SDK wrapper (not yet implemented — Milestone 3)
 shared/
-  types.ts       Event, Account, Interest, GuidelineResult — the one place these shapes are defined
-tests/unit/      mirrors server/ and app/components/
+  types.ts             Event, Account, Interest, GuidelineResult — the one place these shapes are defined
+  eventValidation.ts   presence validation, used by both the server route and EventForm.vue
+tests/unit/      mirrors server/, shared/, and app/ (components/composables/middleware/pages/utils)
 ```
+
+Routing decision logic (`resolveHomeRedirect`, `resolveLeaderRedirect`) is always a pure
+`(Account | null) -> string | null` function, tested directly — separate from the thin
+`navigateTo`-calling wrapper, which isn't unit-tested. See `docs/07-milestones.md` Milestone 2
+for why.
 
 ## Critical architectural rule
 
@@ -89,7 +108,11 @@ SDK client. Don't break this boundary for convenience.
 
 ## Status / known gaps
 
-- Milestone 1 (skeleton) in progress. `shared/types.ts` and `server/utils/store.ts` exist and are
-  fully tested; no UI yet.
+- Milestone 1 complete. Milestone 2 (Core CRUD, no AI) in progress — see
+  `docs/07-milestones.md` for the current step list.
 - `typescript` + `vue-tsc` are installed and `npx nuxi typecheck` passes clean (see the `^6` pin
   note above for why the version matters).
+- Login only persists in client-side reactive state for the current page session (no
+  session-restore endpoint) — a hard refresh or a fresh server-rendered request (e.g. `curl`)
+  always looks logged-out, even with a valid login cookie present. Deliberate scope decision,
+  not a bug; the cookie is real and used server-side for API authorization.
